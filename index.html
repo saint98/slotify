@@ -592,7 +592,7 @@ function calculateStats(){
         const isTop=count===maxScore&&count>0;
         const row=document.createElement('div');
         row.className='p-3 rounded-xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 '+(isWinner?'bg-teal-50 border-teal-400 ring-2 ring-teal-400':isTop?'bg-white border-teal-200':'bg-white border-gray-200');
-        var slotJson=JSON.stringify(slotObj).replace(/'/g,"&apos;");
+        var slotJson=JSON.stringify(slotObj).split("'").join('&apos;');
         var winIcon=isWinner?'&#127942; ':isTop?'&#11088; ':'';
         var barColor=isWinner?'bg-teal-500':isTop?'bg-teal-400':'bg-gray-300';
         var lblColor=isTop?'text-teal-600':'text-gray-400';
