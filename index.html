@@ -1,4 +1,3 @@
-<!-- v2 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -530,26 +529,13 @@ function loadVoterSelections(voterName){
 }
 
 btnDoodleCopy.addEventListener('click',()=>{doodleShareUrl.select();navigator.clipboard.writeText(doodleShareUrl.value).catch(()=>{});btnDoodleCopy.textContent="Copied! &#10003;";btnDoodleCopy.classList.replace('bg-teal-600','bg-emerald-600');setTimeout(()=>{btnDoodleCopy.textContent="Copy link";btnDoodleCopy.classList.replace('bg-emerald-600','bg-teal-600');},2000);});
-btnShareWaDirect.addEventListener('click',()=>{window.open('https://api.whatsapp.com/send?text='+encodeURIComponent('&#9889; *SLOTIFY MEETING POLL*
-
-Title: '+globalMeetingTitle+'
-Location: '+globalLocation+'
-Mark your availability:
-'+doodleShareUrl.value),'_blank');});
-document.getElementById('btn-mailto').addEventListener('click',()=>{const link=doodleShareUrl.value;const slots2=globalSlots.map(si=>{const s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join('
-');const body=encodeURIComponent('Hi,
-
-Please mark your availability for "'+globalMeetingTitle+'".
-
-Location: '+(globalLocation||'Not specified')+'
-
-Proposed times:
-'+slots2+'
-
-Click to respond:
-'+link+'
-
-Thank you.');window.location.href='mailto:?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+body;});
+btnShareWaDirect.addEventListener('click',()=>{const txt='\u26A1 *SLOTIFY MEETING POLL*\n\nTitle: '+globalMeetingTitle+'\nLocation: '+globalLocation+'\nMark your availability:\n'+doodleShareUrl.value;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank');});
+document.getElementById('btn-mailto').addEventListener('click',()=>{
+    const link=doodleShareUrl.value;
+    const slots2=globalSlots.map(si=>{const s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join('\n');
+    const bodyText='Hi,\n\nPlease mark your availability for "'+globalMeetingTitle+'".\n\nLocation: '+(globalLocation||'Not specified')+'\n\nProposed times:\n'+slots2+'\n\nClick to respond:\n'+link+'\n\nThank you.';
+    window.location.href='mailto:?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(bodyText);
+});
 btnGoToVote.addEventListener('click',()=>switchScreen('vote'));
 btnBackToShare.addEventListener('click',()=>{ if(activePollId){if(!doodleShareUrl.value){const baseUrl=window.location.href.split('#')[0];doodleShareUrl.value=baseUrl+'#/poll/'+activePollId;}switchScreen('share');}else{switchScreen('create');}});
 
