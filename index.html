@@ -189,7 +189,7 @@
         </div>
         <button id="btn-back-to-share" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">&#9881;&#65039; Manage poll</button>
     </div>
-    <div class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm border-l-4 border-l-teal-600">
+    <div id="voter-availability-section" class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm border-l-4 border-l-teal-600">
         <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-wider">Your availability</h3>
         <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-4">
             <div class="w-full sm:w-64">
@@ -210,6 +210,10 @@
     </div>
     <div class="bg-gray-50 border border-gray-200 rounded-xl p-5">
         <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">&#128202; Availability overview</h3>
+        <div id="organizer-note" class="hidden mb-3 text-xs bg-teal-50 border border-teal-200 text-teal-700 px-3 py-2 rounded-lg">
+            &#128274; You are viewing as <strong>organizer</strong>. Participants only see the voting form.
+            <button id="btn-finalize" class="ml-2 bg-teal-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-teal-700 transition-colors">&#127942; Finalize best slot</button>
+        </div>
         <div id="slot-stats-container" class="space-y-2"></div>
     </div>
     <div>
@@ -482,6 +486,8 @@ btnCreatePoll.addEventListener('click',async()=>{
         const slotData={title,location:locationName,desc,slots:tempSlots.map(s=>JSON.stringify(s))};
         if(activePollId){await withTimeout(setDoc(doc(db,"polls",activePollId),slotData,{merge:true}),12000);}
         else{const pr=await withTimeout(addDoc(collection(db,"polls"),{...slotData,createdAt:serverTimestamp()}),12000);activePollId=pr.id;}
+        // Mark as organizer in localStorage
+        try{localStorage.setItem('slotify_owned_'+activePollId,'1');}catch(e){}
         globalSlots=[...tempSlots];globalMeetingTitle=title;globalLocation=locationName||"Not specified";globalDesc=desc||"No description.";
         sharePreviewTitle.textContent=globalMeetingTitle;sharePreviewDesc.textContent=globalDesc;sharePreviewLoc.textContent=globalLocation;sharePreviewSlotsCount.textContent=globalSlots.length+' time options';
         const baseUrl=window.location.href.split('#')[0];doodleShareUrl.value=baseUrl+'#/poll/'+activePollId;
@@ -619,11 +625,52 @@ async function loadPollDirectly(pollId){
     }catch(err){console.error(err);window.location.hash='';switchScreen('create');}
 }
 
-function switchScreen(target){screenCreate.classList.add('hidden');screenShare.classList.add('hidden');screenVote.classList.add('hidden');if(target==='create')screenCreate.classList.remove('hidden');if(target==='share')screenShare.classList.remove('hidden');if(target==='vote')screenVote.classList.remove('hidden');}
+function isOrganizer(){
+    try{return localStorage.getItem('slotify_owned_'+activePollId)==='1';}catch(e){return false;}
+}
+
+function switchScreen(target){screenCreate.classList.add('hidden');screenShare.classList.add('hidden');screenVote.classList.add('hidden');
+    if(target==='create')screenCreate.classList.remove('hidden');
+    if(target==='share')screenShare.classList.remove('hidden');
+    if(target==='vote'){
+        screenVote.classList.remove('hidden');
+        // Show/hide organizer elements
+        var org=isOrganizer();
+        var manageBtn=document.getElementById('btn-back-to-share');
+        var availForm=document.getElementById('voter-availability-section');
+        var orgNote=document.getElementById('organizer-note');
+        if(manageBtn)manageBtn.style.display=org?'':'none';
+        if(availForm)availForm.style.display=org?'none':'block';
+        if(orgNote)orgNote.style.display=org?'block':'none';
+    }
+}
 
 window.addEventListener('hashchange',()=>{const h=window.location.hash;if(h&&h.startsWith('#/poll/')){const id=h.replace('#/poll/','');if(activePollId!==id)loadPollDirectly(id);}else switchScreen('create');});
 
 window.addEventListener('DOMContentLoaded',()=>{renderWeekHeader();updateWeekRangeLabel();initCalendarGrid();buildMiniMonthCalendar();const h=window.location.hash;if(h&&h.startsWith('#/poll/'))loadPollDirectly(h.replace('#/poll/',''));});
+
+// Finalize handler
+document.addEventListener('click', function(e){
+    if(e.target && e.target.id==='btn-finalize'){
+        var winner=null,maxCount=0;
+        document.querySelectorAll('#slot-stats-container .p-3').forEach(function(row){
+            var countEl=row.querySelector('.font-mono.font-bold');
+            if(countEl){
+                var parts=countEl.textContent.split('/');
+                var count=parseInt(parts[0]);
+                if(count>maxCount){maxCount=count;winner=row;}
+            }
+        });
+        if(winner){
+            winner.style.outline='3px solid #0d9488';
+            winner.style.outlineOffset='2px';
+            var slotTxt=winner.querySelector('.font-bold.text-gray-900');
+            if(slotTxt)alert('Best slot: '+slotTxt.textContent.replace('🏆 ','').replace('⭐ ',''));
+        }else{
+            alert('No responses yet to determine the best slot.');
+        }
+    }
+});
 
 document.getElementById('logo').addEventListener('click',()=>{activePollId=null;tempSlots=[];btnCreatePoll.innerHTML="Create and share &#128640;";window.location.hash='';location.reload();});
 </script>
