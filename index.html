@@ -69,7 +69,7 @@
         <span class="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-mono">v6.5</span>
     </div>
     <div class="text-xs text-teal-800 bg-teal-50 border border-teal-100 px-3 py-1 rounded-xl font-bold hidden md:block">
-        📅 Dinamik Takvim & Hafta Gezgini Aktif
+        📅 Dynamic Calendar & Week Navigator Active
     </div>
 </header>
 
@@ -80,8 +80,8 @@
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
             <div>
-                <h2 class="text-2xl font-black text-gray-950 mb-1">Yeni Toplantı Slotu Oluştur</h2>
-                <p class="text-gray-500 text-sm">Zaman seçeneklerini belirlemek için Week veya Month görünümünü kullanabilirsiniz.</p>
+                <h2 class="text-2xl font-black text-gray-950 mb-1">Schedule a new meeting</h2>
+                <p class="text-gray-500 text-sm">Use the Week or Month view to add your available time slots.</p>
             </div>
             <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 self-start sm:self-auto">
                 <button id="btn-tab-week" class="view-tab-btn active focus:outline-none">Week</button>
@@ -91,34 +91,34 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Toplantı Konusu / Başlığı *</label>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">What's the occasion? *</label>
                 <input type="text" id="meeting-title" placeholder="Örn: Proje Sprint & Tasarım Değerlendirmesi"
                     class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
             </div>
             <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Konum / Platform (Location)</label>
-                <input type="text" id="meeting-location" placeholder="Örn: Google Meet, Zoom veya Ofis"
+                <input type="text" id="meeting-location" placeholder="e.g. Google Meet, Zoom or Office"
                     class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
             </div>
         </div>
 
         <div>
             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Açıklama / Gündem Notları</label>
-            <textarea id="meeting-desc" rows="2" placeholder="Katılımcıların oylama yaparken göreceği detaylar..."
+            <textarea id="meeting-desc" rows="2" placeholder="Add agenda, instructions or other details..."
                 class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors text-sm"></textarea>
         </div>
 
         <!-- ─── WEEK VIEW ─── -->
         <div id="panel-view-week" class="space-y-6">
             <div>
-                <label class="block text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">👉 Eklenecek Slotun Süresini Seçin</label>
+                <label class="block text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">👉 Eklenecek Slotun Durationsini Seçin</label>
                 <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
                     <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="15">15 dk</button>
                     <button type="button" class="btn-duration active-duration border px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="30">30 dk</button>
                     <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="60">60 dk</button>
                     <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="90">90 dk</button>
                     <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="120">120 dk</button>
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-blue-600 border-blue-200 px-3 py-2.5 rounded-xl text-xs font-black transition-all focus:outline-none" data-mins="allday">Tüm Gün 📅</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-blue-600 border-blue-200 px-3 py-2.5 rounded-xl text-xs font-black transition-all focus:outline-none" data-mins="allday">All day 📅</button>
                 </div>
             </div>
 
@@ -128,12 +128,12 @@
                     <div class="flex items-center gap-2">
                         <button id="btn-prev-week"
                             class="text-xs font-bold text-gray-600 hover:text-teal-700 bg-gray-100 hover:bg-teal-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-all focus:outline-none">
-                            ◀ Önceki
+                            ← Prev
                         </button>
                         <span id="week-range-label" class="text-xs font-bold text-gray-700 min-w-[170px] text-center select-none"></span>
                         <button id="btn-next-week"
                             class="text-xs font-bold text-gray-600 hover:text-teal-700 bg-gray-100 hover:bg-teal-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-all focus:outline-none">
-                            Sonraki ▶
+                            Next →
                         </button>
                     </div>
                 </div>
@@ -160,14 +160,14 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-gray-400 uppercase mb-2">
-                    <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
                 </div>
                 <div id="mini-month-grid" class="grid grid-cols-7 gap-y-2 justify-items-center"></div>
             </div>
             <div class="lg:col-span-7 bg-gray-50 border border-gray-200 rounded-2xl p-5 min-h-[320px] flex flex-col justify-between">
                 <div>
                     <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                        <span>📋</span> Günlük Saat & Süre Ekleme Listesi
+                        <span>📋</span> Daily time slots
                     </h3>
                     <div id="month-days-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-1"></div>
                 </div>
@@ -176,13 +176,13 @@
 
         <!-- Selected slots list -->
         <div>
-            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Oluşturulan Toplam Slot Kombinasyonu</h4>
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selected time slots</h4>
             <div id="selected-slots-list" class="flex flex-wrap gap-2"></div>
         </div>
 
         <button id="btn-create-poll"
             class="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-6 rounded-xl transition-all shadow-md active:scale-[0.99] text-base">
-            Anket Linkini Uçur 🚀
+            Create and share 🚀
         </button>
     </section>
 
@@ -191,19 +191,19 @@
         <div class="md:col-span-5 bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white flex flex-col justify-between border-r border-gray-100">
             <div class="space-y-4">
                 <div class="inline-block bg-teal-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider shadow">
-                    ✓ Anket Oluşturuldu
+                    ✓ Poll created
                 </div>
                 <h3 id="share-preview-title" class="text-2xl font-black leading-tight text-white tracking-tight">Yükleniyor...</h3>
                 <p id="share-preview-desc" class="text-slate-300 text-sm font-normal line-clamp-4 leading-relaxed"></p>
             </div>
             <div class="pt-6 border-t border-slate-700/60 space-y-2.5">
                 <div class="flex items-center gap-2 text-xs text-slate-400">
-                    <span>📍 Konum:</span>
-                    <strong id="share-preview-loc" class="text-slate-200">Belirtilmedi</strong>
+                    <span>📍 Location:</span>
+                    <strong id="share-preview-loc" class="text-slate-200">Not specified</strong>
                 </div>
                 <div class="flex items-center gap-2 text-xs text-slate-400">
-                    <span>📅 Seçenekler:</span>
-                    <strong id="share-preview-slots-count" class="text-slate-200">0 Slot Önerildi</strong>
+                    <span>📅 Options:</span>
+                    <strong id="share-preview-slots-count" class="text-slate-200">0 slots proposed</strong>
                 </div>
             </div>
         </div>
@@ -212,23 +212,23 @@
             <div class="space-y-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
                     <div>
-                        <h2 class="text-xl font-black text-gray-950">Davet et ve paylaş</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Katılımcıların oy vermesi için linki iletin.</p>
+                        <h2 class="text-xl font-black text-gray-950">Invite people</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Share the link so participants can vote.</p>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <button id="btn-admin-edit" class="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">✏️ Düzenle</button>
-                        <button id="btn-admin-delete" class="flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">🗑️ Sil</button>
+                        <button id="btn-admin-edit" class="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">✏️ Edit</button>
+                        <button id="btn-admin-delete" class="flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">🗑️ Delete</button>
                     </div>
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Anket Katılım Linki</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Poll link</label>
                     <div class="flex bg-gray-50 border border-gray-300 rounded-xl p-1.5 focus-within:border-teal-500 transition-colors">
                         <input type="text" id="doodle-share-url" readonly
                             class="bg-transparent text-gray-800 text-sm font-mono px-3 py-2 flex-grow focus:outline-none">
                         <button id="btn-doodle-copy"
                             class="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition-all shadow-sm shrink-0">
-                            Linki Kopyala
+                            Copy link
                         </button>
                     </div>
                     <!-- Warning shown only when running from file:// -->
@@ -240,20 +240,20 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <button id="btn-share-wa-direct"
                         class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 font-bold p-3 rounded-xl text-xs transition-colors">
-                        💬 WhatsApp ile Paylaş
+                        💬 Share via WhatsApp
                     </button>
                     <button id="btn-mailto"
                         class="flex items-center justify-center gap-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold p-3 rounded-xl text-xs transition-colors">
-                        ✉️ E-posta Daveti Gönder
+                        ✉️ Send email invite
                     </button>
                 </div>
             </div>
 
             <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-xs text-gray-400">Anlık oyları ve takvim istatistiklerini takip edin.</p>
+                <p class="text-xs text-gray-400">Track live votes and calendar stats.</p>
                 <button id="btn-go-to-vote"
                     class="w-full sm:w-auto bg-gray-950 hover:bg-gray-800 text-white font-black py-3 px-6 rounded-xl text-xs transition-all shadow tracking-wide uppercase">
-                    Canlı Oylama Sayfasına Git 📊
+                    View poll results 📊
                 </button>
             </div>
         </div>
@@ -263,12 +263,12 @@
     <section id="screen-vote" class="fade-in hidden bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-md space-y-6">
         <div class="border-b border-gray-200 pb-3 flex justify-between items-start gap-4">
             <div>
-                <span class="text-[10px] font-mono bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full uppercase tracking-widest">● CANLI KÖPRÜ AKTİF</span>
+                <span class="text-[10px] font-mono bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full uppercase tracking-widest">● LIVE</span>
                 <h2 id="vote-title" class="text-2xl font-black text-gray-950 mt-1">Yükleniyor...</h2>
                 <p id="vote-details" class="text-sm text-gray-500 mt-1"></p>
             </div>
             <button id="btn-back-to-share" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">
-                ⚙️ Yönetim Paneli
+                ⚙️ Manage poll
             </button>
         </div>
 
@@ -277,31 +277,31 @@
             <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-wider">Kendi Katılımını Bildir</h3>
             <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-4">
                 <div class="w-full sm:w-64">
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Adın Soyadın</label>
-                    <input type="text" id="voter-name" placeholder="Örn: Mert"
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Your name</label>
+                    <input type="text" id="voter-name" placeholder="e.g. Alex"
                         class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-950 focus:outline-none focus:border-teal-500">
                 </div>
                 <div class="pt-5">
-                    <p class="text-xs text-gray-500">İsim gir → her slotu işaretle → kaydet</p>
+                    <p class="text-xs text-gray-500">Enter your name → mark your availability → save</p>
                 </div>
             </div>
             <div class="mb-2 flex items-center justify-between">
-                <label class="text-xs font-bold text-gray-600 uppercase tracking-wider">Hangi saatler sana uygun?</label>
+                <label class="text-xs font-bold text-gray-600 uppercase tracking-wider">Which times work for you?</label>
                 <div class="flex gap-2 text-[10px] font-bold">
-                    <span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">✅ Uygunum</span>
-                    <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">— Uygun değilim</span>
+                    <span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">✅ Works for me</span>
+                    <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">— Doesn't work</span>
                 </div>
             </div>
             <div id="slot-availability-grid" class="space-y-2 max-h-72 overflow-y-auto pr-1 mb-4"></div>
             <button id="btn-submit-vote"
                 class="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.98]">
-                Seçimlerimi Kaydet ⚡
+                Save my availability ⚡
             </button>
         </div>
 
         <!-- İstatistikler -->
         <div class="bg-gray-50 border border-gray-200 rounded-xl p-5">
-            <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">📊 Ortak Müsaitlik Durumu</h3>
+            <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">📊 Availability overview</h3>
             <div id="slot-stats-container" class="space-y-2"></div>
         </div>
 
@@ -314,7 +314,7 @@
 </main>
 
 <footer class="text-center py-4 text-[11px] text-gray-400 border-t border-gray-200 bg-white shadow-inner">
-    Slotify © 2026 — Işık Hızında Doodle Planlama Motoru.
+    Slotify © 2026 — Lightning-fast meeting scheduling.
 </footer>
 
 <script type="module">
@@ -358,7 +358,7 @@ function getWeekDays(offset) {
     const monday = new Date(today);
     monday.setDate(today.getDate() + diffToMon + offset * 7);
     monday.setHours(0, 0, 0, 0);
-    const names = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return Array.from({ length: 7 }, (_, i) => {
         const d = new Date(monday);
         d.setDate(monday.getDate() + i);
@@ -413,7 +413,7 @@ function renderWeekHeader() {
     // First cell: label column
     const labelCell = document.createElement('div');
     labelCell.className = "text-gray-400 text-left pl-2 flex items-center text-xs font-bold";
-    labelCell.textContent = "Günler";
+    labelCell.textContent = "Days";
     weekHeaderRow.appendChild(labelCell);
 
     daysData.forEach(day => {
@@ -426,7 +426,7 @@ function renderWeekHeader() {
         col.innerHTML = `
             <span class="text-xs font-bold ${isWeekend ? 'text-teal-600' : 'text-gray-800'}">${day.name}</span><br>
             <span class="text-[10px] font-normal ${isWeekend ? 'text-teal-400' : 'text-gray-400'}">${dateDisplay}</span>
-            ${isToday ? '<br><span class="text-[8px] font-black text-teal-500">● BUGÜN</span>' : ''}
+            ${isToday ? '<br><span class="text-[8px] font-black text-teal-500">● TODAY</span>' : ''}
         `;
         weekHeaderRow.appendChild(col);
     });
@@ -499,13 +499,13 @@ durationButtons.forEach(btn => {
 // ── Calendar grid ──────────────────────────────────────────────────────
 function initCalendarGrid() {
     // All-day row
-    allDayRow.innerHTML = `<div class="text-left text-[11px] font-black text-blue-700 flex items-center pl-1 uppercase tracking-wider">Tüm Gün</div>`;
+    allDayRow.innerHTML = `<div class="text-left text-[11px] font-black text-blue-700 flex items-center pl-1 uppercase tracking-wider">All day</div>`;
     daysData.forEach(day => {
         const dayCell = document.createElement('div');
         dayCell.setAttribute('data-allday-date', day.dateStr);
         dayCell.className = "p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors";
         dayCell.style.cssText = "background:#f3f4f6; border:1px dashed #d1d5db; border-radius:4px;";
-        dayCell.innerHTML = `<span>+ Tüm Gün</span>`;
+        dayCell.innerHTML = `<span>+ All day</span>`;
         dayCell.addEventListener('click', () => handleAllDayClick(day.dateStr));
         allDayRow.appendChild(dayCell);
     });
@@ -545,7 +545,7 @@ function handleAllDayClick(dateStr) {
         tempSlots.push({
             start: new Date(`${dateStr}T00:00:00`).toISOString(),
             duration: "allday",
-            display: `📅 ${dateStr} (Tüm Gün)`,
+            display: `📅 ${dateStr} (All day)`,
             dateKey: dateStr, hourKey: "allday"
         });
     }
@@ -624,7 +624,7 @@ function renderMonthDaysUi() {
     monthDaysContainer.innerHTML = '';
     const activeDates = [...new Set(tempSlots.map(s => s.dateKey))].sort();
     if (activeDates.length === 0) {
-        monthDaysContainer.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-16">Soldaki takvimden bir veya birden fazla güne tıklayarak saat planlaması oluşturun.</p>`;
+        monthDaysContainer.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-16">Click on one or more days in the calendar to add time slots.</p>`;
         return;
     }
     activeDates.forEach(dateStr => {
@@ -640,7 +640,7 @@ function renderMonthDaysUi() {
 
         const btnRemoveGroup = document.createElement('button');
         btnRemoveGroup.className = "text-gray-400 hover:text-red-500 text-xs font-bold";
-        btnRemoveGroup.textContent = "Günü Kaldır";
+        btnRemoveGroup.textContent = "Remove day";
         btnRemoveGroup.onclick = () => {
             tempSlots = tempSlots.filter(s => s.dateKey !== dateStr);
             buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
@@ -654,7 +654,7 @@ function renderMonthDaysUi() {
 
             const timeDiv = document.createElement('div');
             timeDiv.className = "flex flex-col";
-            timeDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Başlangıç</span>`;
+            timeDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Start</span>`;
             const timeInput = document.createElement('input');
             timeInput.type = "time";
             timeInput.value = slot.hourKey === "allday" ? "09:00" : slot.hourKey;
@@ -664,16 +664,16 @@ function renderMonthDaysUi() {
 
             const durDiv = document.createElement('div');
             durDiv.className = "flex flex-col";
-            durDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Süre</span>`;
+            durDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Duration</span>`;
             const durSelect = document.createElement('select');
             durSelect.className = "bg-white border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-800 outline-none focus:border-blue-500";
             durSelect.innerHTML = `
                 <option value="15"     ${slot.duration === 15     ? 'selected' : ''}>15 dk</option>
                 <option value="30"     ${slot.duration === 30     ? 'selected' : ''}>30 dk</option>
-                <option value="60"     ${slot.duration === 60     ? 'selected' : ''}>1 saat</option>
+                <option value="60"     ${slot.duration === 60     ? 'selected' : ''}>1 hour</option>
                 <option value="90"     ${slot.duration === 90     ? 'selected' : ''}>90 dk</option>
-                <option value="120"    ${slot.duration === 120    ? 'selected' : ''}>2 saat</option>
-                <option value="allday" ${slot.duration === 'allday'? 'selected' : ''}>Tüm Gün</option>
+                <option value="120"    ${slot.duration === 120    ? 'selected' : ''}>2 hours</option>
+                <option value="allday" ${slot.duration === 'allday'? 'selected' : ''}>All day</option>
             `;
             durSelect.onchange = e => updateMonthSlotData(slot, 'duration', e.target.value);
             durDiv.appendChild(durSelect); row.appendChild(durDiv);
@@ -691,7 +691,7 @@ function renderMonthDaysUi() {
 
         const btnAddTimes = document.createElement('button');
         btnAddTimes.className = "text-blue-600 hover:text-blue-700 text-xs font-black block pt-1";
-        btnAddTimes.innerHTML = "+ Saat Ekle";
+        btnAddTimes.innerHTML = "+ Add time";
         btnAddTimes.onclick = () => {
             let nextHour = "10:00";
             if (daySlots.length > 0 && daySlots[daySlots.length - 1].hourKey !== "allday") {
@@ -717,7 +717,7 @@ function updateMonthSlotData(slotRef, type, value) {
     if (slotRef.duration === 'allday') {
         slotRef.hourKey = "allday";
         slotRef.start   = new Date(`${slotRef.dateKey}T00:00:00`).toISOString();
-        slotRef.display = `📅 ${slotRef.dateKey} (Tüm Gün)`;
+        slotRef.display = `📅 ${slotRef.dateKey} (All day)`;
     } else {
         if (slotRef.hourKey === "allday") slotRef.hourKey = "09:00";
         const startObj = new Date(`${slotRef.dateKey}T${slotRef.hourKey}:00`);
@@ -739,7 +739,7 @@ function syncGridUiWithSlots() {
     daysData.forEach(day => {
         const adCell = document.querySelector(`[data-allday-date="${day.dateStr}"]`);
         if (adCell) {
-            adCell.className = "p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors"; adCell.style.cssText = "background:#f3f4f6;border:1px dashed #d1d5db;border-radius:4px;"; adCell.innerHTML = `<span>+ Tüm Gün</span>`;
+            adCell.className = "p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors"; adCell.style.cssText = "background:#f3f4f6;border:1px dashed #d1d5db;border-radius:4px;"; adCell.innerHTML = `<span>+ All day</span>`;
         }
     });
     tempSlots.forEach(slot => {
@@ -747,7 +747,7 @@ function syncGridUiWithSlots() {
             const adCell = document.querySelector(`[data-allday-date="${slot.dateKey}"]`);
             if (adCell) {
                 adCell.className = "allday-badge flex items-center justify-center relative";
-                adCell.innerHTML = `<span>✓ Tüm Gün</span><div class="absolute top-0.5 right-1 text-[9px] text-white font-bold">✕</div>`;
+                adCell.innerHTML = `<span>✓ All day</span><div class="absolute top-0.5 right-1 text-[9px] text-white font-bold">✕</div>`;
             }
             document.querySelectorAll(`[data-date="${slot.dateKey}"]`).forEach(cell => {
                 cell.classList.add('blocked-cell'); cell.innerHTML = `🔒`;
@@ -800,7 +800,7 @@ function syncGridUiWithSlots() {
 function renderTempSlots() {
     selectedSlotsList.innerHTML = '';
     if (tempSlots.length === 0) {
-        selectedSlotsList.innerHTML = `<p class="text-xs text-gray-400 italic">Takvimden veya Ay listesinden slot kombinasyonları oluşturun...</p>`;
+        selectedSlotsList.innerHTML = `<p class="text-xs text-gray-400 italic">Click on the calendar to add time slots...</p>`;
         return;
     }
     tempSlots.forEach((slot, index) => {
@@ -833,11 +833,11 @@ btnCreatePoll.addEventListener('click', async () => {
     const locationName = inputLocation.value.trim();
     const desc         = inputDesc.value.trim();
 
-    if (!title)                 return alert('Lütfen bir toplantı başlığı girin!');
-    if (tempSlots.length === 0) return alert('En az bir zaman veya gün seçmelisiniz!');
+    if (!title)                 return alert('Please enter a meeting title!');
+    if (tempSlots.length === 0) return alert('Please select at least one time slot!');
 
     const originalBtnText = btnCreatePoll.innerHTML;
-    btnCreatePoll.innerHTML = activePollId ? "Anket Güncelleniyor... ⏳" : "Anket Buluta Yükleniyor... ⏳";
+    btnCreatePoll.innerHTML = activePollId ? "Updating... ⏳" : "Creating poll... ⏳";
     btnCreatePoll.disabled = true;
 
     try {
@@ -857,13 +857,13 @@ btnCreatePoll.addEventListener('click', async () => {
 
         globalSlots        = [...tempSlots];
         globalMeetingTitle = title;
-        globalLocation     = locationName || "Belirtilmedi";
-        globalDesc         = desc || "Açıklama girilmedi.";
+        globalLocation     = locationName || "Not specified";
+        globalDesc         = desc || "No description.";
 
         sharePreviewTitle.textContent = globalMeetingTitle;
         sharePreviewDesc.textContent  = globalDesc;
         sharePreviewLoc.textContent   = globalLocation;
-        sharePreviewSlotsCount.textContent = `${globalSlots.length} Farklı Alternatif`;
+        sharePreviewSlotsCount.textContent = `${globalSlots.length} time options`;
 
         const baseUrl = window.location.href.split('#')[0];
         doodleShareUrl.value = `${baseUrl}#/poll/${activePollId}`;
@@ -907,12 +907,12 @@ btnCreatePoll.addEventListener('click', async () => {
 
 // ── Admin actions ──────────────────────────────────────────────────────
 btnAdminEdit.addEventListener('click', () => {
-    if (confirm("Anketi düzenlemek istiyor musunuz? Mevcut oylar korunacaktır.")) {
+    if (confirm("Edit this poll? Existing votes will be preserved.")) {
         tempSlots = globalSlots.map(s => typeof s === 'string' ? JSON.parse(s) : {...s});
         switchScreen('create');
         renderWeekHeader(); updateWeekRangeLabel(); initCalendarGrid();
         buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
-        btnCreatePoll.innerHTML = "Anketi Güncelle ✏️";
+        btnCreatePoll.innerHTML = "Update and share ✏️";
     }
 });
 
@@ -920,7 +920,7 @@ btnAdminDelete.addEventListener('click', async () => {
     if (confirm("Bu anketi tamamen silmek istediğinize emin misiniz? Tüm oylama verileri yok olacaktır.")) {
         try {
             await deleteDoc(doc(db, "polls", activePollId));
-            alert("Anket başarıyla silindi.");
+            alert("Poll deleted successfully.");
             window.location.hash = '';
             inputTitle.value = ''; inputLocation.value = ''; inputDesc.value = ''; tempSlots = [];
             initCalendarGrid(); buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
@@ -936,8 +936,8 @@ btnAdminDelete.addEventListener('click', async () => {
 function setupVoteScreen(title, locationName, desc, slots) {
     voteTitle.textContent = title;
     voteDetails.innerHTML = `
-        ${locationName && locationName !== "Belirtilmedi" ? '<span class="bg-gray-100 px-2 py-1 rounded border border-gray-200 mr-2">📍 ' + locationName + '</span>' : ''}
-        ${desc && desc !== "Açıklama girilmedi." ? '<span class="text-gray-600">📝 ' + desc + '</span>' : ''}
+        ${locationName && locationName !== "Not specified" ? '<span class="bg-gray-100 px-2 py-1 rounded border border-gray-200 mr-2">📍 ' + locationName + '</span>' : ''}
+        ${desc && desc !== "No description." ? '<span class="text-gray-600">📝 ' + desc + '</span>' : ''}
     `;
 
     const grid = document.getElementById('slot-availability-grid');
@@ -954,7 +954,7 @@ function setupVoteScreen(title, locationName, desc, slots) {
         row.innerHTML = `
             <span class="text-xs font-mono text-gray-700 flex-grow">${s.display}</span>
             <button class="slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300"
-                    data-key="${key}" data-available="false">— Uygun değilim</button>
+                    data-key="${key}" data-available="false">— Doesn't work</button>
         `;
         grid.appendChild(row);
     });
@@ -965,10 +965,10 @@ function setupVoteScreen(title, locationName, desc, slots) {
             btn.setAttribute('data-available', String(!isAvailable));
             if (!isAvailable) {
                 btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-teal-500 text-white';
-                btn.textContent = '✅ Uygunum';
+                btn.textContent = '✅ Works for me';
             } else {
                 btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300';
-                btn.textContent = '— Uygun değilim';
+                btn.textContent = '— Doesn't work';
             }
         });
     });
@@ -983,10 +983,10 @@ function loadVoterSelections(voterName) {
         btn.setAttribute('data-available', String(available));
         if (available) {
             btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-teal-500 text-white';
-            btn.textContent = '✅ Uygunum';
+            btn.textContent = '✅ Works for me';
         } else {
             btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300';
-            btn.textContent = '— Uygun değilim';
+            btn.textContent = '— Doesn't work';
         }
     });
 }
@@ -995,34 +995,34 @@ function loadVoterSelections(voterName) {
 btnDoodleCopy.addEventListener('click', () => {
     doodleShareUrl.select();
     navigator.clipboard.writeText(doodleShareUrl.value).catch(() => {});
-    btnDoodleCopy.textContent = "Kopyalandı! ✓";
+    btnDoodleCopy.textContent = "Copied! ✓";
     btnDoodleCopy.classList.replace('bg-teal-600', 'bg-emerald-600');
     setTimeout(() => {
-        btnDoodleCopy.textContent = "Linki Kopyala";
+        btnDoodleCopy.textContent = "Copy link";
         btnDoodleCopy.classList.replace('bg-emerald-600', 'bg-teal-600');
     }, 2000);
 });
 
 btnShareWaDirect.addEventListener('click', () => {
-    const txt = `⚡ *SLOTIFY TOPLANTI ANKETİ* ⚡\n\n📢 *Konu:* ${globalMeetingTitle}\n📍 *Konum:* ${globalLocation}\n👇 Süre opsiyonlarını inceleyip oyunu ver:\n🔗 ${doodleShareUrl.value}`;
+    const txt = `⚡ *SLOTIFY MEETING POLL* ⚡\n\n📢 *Title:* ${globalMeetingTitle}\n📍 *Location:* ${globalLocation}\n👇 Duration opsiyonlarını inceleyip oyunu ver:\n🔗 ${doodleShareUrl.value}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
 });
 
 document.getElementById('btn-mailto').addEventListener('click', () => {
     const link   = doodleShareUrl.value;
-    const konu   = encodeURIComponent(`Toplantı Zamanı Oylaması: ${globalMeetingTitle}`);
+    const konu   = encodeURIComponent(`Meeting poll: ${globalMeetingTitle}`);
     const slotListesi = globalSlots.map(si => {
         const s = typeof si === 'string' ? JSON.parse(si) : si;
         return `  • ${s.display}`;
     }).join('\n');
     const govde = encodeURIComponent(
         `Merhaba,\n\n` +
-        `"${globalMeetingTitle}" toplantısı için uygun zamanınızı seçmenizi rica ediyorum.\n\n` +
-        `📍 Konum: ${globalLocation || 'Belirtilmedi'}\n\n` +
-        `Önerilen zaman seçenekleri:\n${slotListesi}\n\n` +
-        `Aşağıdaki bağlantıya tıklayarak uygun olduğunuz saatleri işaretleyebilirsiniz:\n` +
+        `"${globalMeetingTitle}" toplantısı için available zamanınızı seçmenizi rica ediyorum.\n\n` +
+        `📍 Location: ${globalLocation || 'Not specified'}\n\n` +
+        `Proposed time options:\n${slotListesi}\n\n` +
+        `Aşağıdaki bağlantıya tıklayarak available olduğunuz saatleri işaretleyebilirsiniz:\n` +
         `${link}\n\n` +
-        `Teşekkürler.`
+        `Thank you.`
     );
     window.location.href = `mailto:?subject=${konu}&body=${govde}`;
 });
@@ -1050,8 +1050,8 @@ inputVoterName.addEventListener('blur', () => {
 btnSubmitVote.addEventListener('click', async () => {
     try {
         const name = inputVoterName.value.trim();
-        if (!name)         return alert('Lütfen adınızı yazın.');
-        if (!activePollId) return alert('Hata: Anket referansı bulunamadı.');
+        if (!name)         return alert('Please enter your name.');
+        if (!activePollId) return alert('Error: Poll reference not found.');
 
         const availability = {};
         let enAzBirUygun = false;
@@ -1061,9 +1061,9 @@ btnSubmitVote.addEventListener('click', async () => {
             availability[key] = available;
             if (available) enAzBirUygun = true;
         });
-        if (!enAzBirUygun) return alert('En az bir saat için "✅ Uygunum" seçmelisiniz!');
+        if (!enAzBirUygun) return alert('En az bir saat için "✅ Works for me" seçmelisiniz!');
 
-        btnSubmitVote.innerHTML = "Kaydediliyor... ⏳";
+        btnSubmitVote.innerHTML = "Saving... ⏳";
         btnSubmitVote.disabled  = true;
 
         const voteData = { voterName: name, availability, votedAt: serverTimestamp() };
@@ -1071,17 +1071,17 @@ btnSubmitVote.addEventListener('click', async () => {
         const existingSnap = await getDocs(existingQ);
         if (!existingSnap.empty) {
             await updateDoc(existingSnap.docs[0].ref, voteData);
-            alert("Seçimleriniz güncellendi! ✅");
+            alert("Your availability updated! ✅");
         } else {
             await addDoc(collection(db, "polls", activePollId, "votes"), voteData);
-            alert("Seçimleriniz kaydedildi! 🎉");
+            alert("Availability saved! 🎉");
         }
 
     } catch (e) {
         console.error("Oy gönderme hatası:", e);
-        alert("Veritabanı Hatası: " + e.message);
+        alert("Database error: " + e.message);
     } finally {
-        btnSubmitVote.innerHTML = "Seçimlerimi Kaydet ⚡";
+        btnSubmitVote.innerHTML = "Save my availability ⚡";
         btnSubmitVote.disabled  = false;
     }
 });
@@ -1091,7 +1091,7 @@ function calculateStats() {
     slotStatsContainer.innerHTML = '';
     const totalVoters = globalVotesData.length;
     if (totalVoters === 0) {
-        slotStatsContainer.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4">Henüz kimse oy vermedi.</p>';
+        slotStatsContainer.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4">No responses yet.</p>';
         updateVotersList();
         return;
     }
@@ -1099,28 +1099,28 @@ function calculateStats() {
     const allDayDates = new Set();
     globalSlots.forEach(si => { const s = typeof si === 'string' ? JSON.parse(si) : si; if (s.duration === "allday") allDayDates.add(s.dateKey); });
 
-    // Her slot için "uygunum" sayısını hesapla
+    // Her slot için "availableum" sayısını hesapla
     const slotScores = [];
     globalSlots.forEach(si => {
         const slotObj = typeof si === 'string' ? JSON.parse(si) : si;
         if (slotObj.duration !== "allday" && allDayDates.has(slotObj.dateKey)) return;
         const key = `${slotObj.dateKey}_${slotObj.hourKey}`;
 
-        const uygunlar = globalVotesData.filter(v => {
+        const availablelar = globalVotesData.filter(v => {
             if (v.availability) return v.availability[key] === true;
             return false;
         }).map(v => v.voterName);
 
-        slotScores.push({ slotObj, key, uygunlar, count: uygunlar.length });
+        slotScores.push({ slotObj, key, availablelar, count: availablelar.length });
     });
 
     // En yüksek skoru bul
     const maxScore = Math.max(...slotScores.map(s => s.count));
 
-    // Sırala: en çok uygun → en az
+    // Sırala: en çok available → en az
     slotScores.sort((a, b) => b.count - a.count);
 
-    slotScores.forEach(({ slotObj, uygunlar, count }) => {
+    slotScores.forEach(({ slotObj, availablelar, count }) => {
         const yuzde  = Math.round(count / totalVoters * 100);
         const isWinner = count === maxScore && count === totalVoters && totalVoters > 0;
         const isTop    = count === maxScore && count > 0;
@@ -1132,12 +1132,12 @@ function calculateStats() {
             <div class="flex-grow">
                 <div class="flex justify-between text-xs mb-1 items-center">
                     <span class="font-bold text-gray-900">${isWinner ? '🏆 ' : isTop ? '⭐ ' : ''}${slotObj.display}</span>
-                    <span class="${isTop ? 'text-teal-600' : 'text-gray-400'} font-mono font-bold text-xs">${count}/${totalVoters} uygun</span>
+                    <span class="${isTop ? 'text-teal-600' : 'text-gray-400'} font-mono font-bold text-xs">${count}/${totalVoters} available</span>
                 </div>
                 <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200">
                     <div class="${isWinner ? 'bg-teal-500' : isTop ? 'bg-teal-400' : 'bg-gray-300'} h-2.5 rounded-full transition-all duration-500" style="width:${yuzde}%"></div>
                 </div>
-                <p class="text-[10px] text-gray-500 mt-1">${uygunlar.length > 0 ? '✅ ' + uygunlar.join(', ') : 'Henüz kimse uygun değil'}</p>
+                <p class="text-[10px] text-gray-500 mt-1">${availablelar.length > 0 ? '✅ ' + availablelar.join(', ') : 'Henüz kimse available değil'}</p>
             </div>
             <button class="btn-cal bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition-colors shrink-0 shadow"
                 data-slot='${JSON.stringify(slotObj)}'>📅 Takvime İşle</button>
@@ -1159,14 +1159,14 @@ function updateVotersList() {
     if (!container) return;
     container.innerHTML = '';
     if (globalVotesData.length === 0) {
-        container.innerHTML = '<p class="text-xs text-gray-400 italic">Henüz kimse katılımını bildirmedi.</p>';
+        container.innerHTML = '<p class="text-xs text-gray-400 italic">No participants yet.</p>';
         return;
     }
     globalVotesData.forEach(v => {
         const badge = document.createElement('div');
         badge.className = 'flex items-center gap-1.5 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-700';
-        const uygunSayisi = v.availability ? Object.values(v.availability).filter(Boolean).length : 0;
-        badge.innerHTML = `👤 ${v.voterName} <span class="text-teal-600 font-mono">(${uygunSayisi} uygun)</span>`;
+        const availableSayisi = v.availability ? Object.values(v.availability).filter(Boolean).length : 0;
+        badge.innerHTML = `👤 ${v.voterName} <span class="text-teal-600 font-mono">(${availableSayisi} available)</span>`;
         container.appendChild(badge);
     });
 }
@@ -1206,7 +1206,7 @@ async function loadPollDirectly(pollId) {
         if (docSnap.exists()) {
             const data = docSnap.data();
             globalMeetingTitle = data.title;
-            globalLocation     = data.location || "Belirtilmedi";
+            globalLocation     = data.location || "Not specified";
             globalDesc         = data.desc || "";
             globalSlots        = data.slots;
 
@@ -1215,9 +1215,9 @@ async function loadPollDirectly(pollId) {
             inputDesc.value     = globalDesc;
 
             sharePreviewTitle.textContent      = globalMeetingTitle;
-            sharePreviewDesc.textContent       = globalDesc || "Açıklama girmediniz.";
+            sharePreviewDesc.textContent       = globalDesc || "No description provided.";
             sharePreviewLoc.textContent        = globalLocation;
-            sharePreviewSlotsCount.textContent = `${globalSlots.length} Farklı Alternatif`;
+            sharePreviewSlotsCount.textContent = `${globalSlots.length} time options`;
             doodleShareUrl.value               = `${window.location.href.split('#')[0]}#/poll/${pollId}`;
 
             setupVoteScreen(data.title, globalLocation, globalDesc, data.slots);
@@ -1264,7 +1264,7 @@ window.addEventListener('DOMContentLoaded', () => {
 document.getElementById('logo').addEventListener('click', () => { 
     activePollId = null;
     tempSlots = [];
-    btnCreatePoll.innerHTML = "Anket Linkini Uçur 🚀";
+    btnCreatePoll.innerHTML = "Create and share 🚀";
     window.location.hash = ''; location.reload(); 
 });
 </script>
