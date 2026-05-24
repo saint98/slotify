@@ -176,8 +176,8 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <button id="btn-share-wa-direct" class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 font-bold p-3 rounded-xl text-xs transition-colors">&#128172; Share via WhatsApp</button>
-                <button id="btn-mailto" class="flex items-center justify-center gap-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold p-3 rounded-xl text-xs transition-colors">&#9993;&#65039; Send email invite</button>
-                <button id="btn-mailto-self" class="flex items-center justify-center gap-2 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 font-bold p-3 rounded-xl text-xs transition-colors">&#128947;&#65039; Send link to myself</button>
+                <button id="btn-mailto" class="flex items-center justify-center gap-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold p-3 rounded-xl text-xs transition-colors">&#9993; Invite by email</button>
+
             </div>
         </div>
         <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -229,6 +229,28 @@
         <div id="voters-list" class="flex flex-wrap gap-2"></div>
     </div>
 </section>
+
+<!-- Email invite modal -->
+<div id="email-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-black text-gray-950">Invite by email</h3>
+            <button id="btn-close-modal" class="text-gray-400 hover:text-gray-600 text-xl font-bold focus:outline-none">&#10005;</button>
+        </div>
+        <p class="text-sm text-gray-500">Enter email addresses separated by commas or new lines.</p>
+        <textarea id="invite-emails" rows="4" placeholder="alice@example.com&#10;bob@example.com&#10;carol@example.com"
+            class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 focus:outline-none focus:border-teal-500 transition-colors resize-none"></textarea>
+        <div class="flex gap-3">
+            <button id="btn-send-invites" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-black py-3 rounded-xl text-sm transition-all shadow">
+                &#9993; Open in mail app
+            </button>
+            <button id="btn-close-modal2" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-sm transition-all">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
 </main>
 
 <footer class="text-center py-4 text-[11px] text-gray-400 border-t border-gray-200 bg-white shadow-inner">
@@ -565,12 +587,33 @@ function loadVoterSelections(voterName){
 
 btnDoodleCopy.addEventListener('click',()=>{doodleShareUrl.select();navigator.clipboard.writeText(doodleShareUrl.value).catch(()=>{});btnDoodleCopy.textContent="Copied! &#10003;";btnDoodleCopy.classList.replace('bg-teal-600','bg-emerald-600');setTimeout(()=>{btnDoodleCopy.textContent="Copy link";btnDoodleCopy.classList.replace('bg-emerald-600','bg-teal-600');},2000);});
 btnShareWaDirect.addEventListener('click',()=>{var nl=String.fromCharCode(10);var txt='SLOTIFY MEETING POLL'+nl+nl+'Title: '+globalMeetingTitle+nl+'Location: '+globalLocation+nl+'Mark your availability:'+nl+doodleShareUrl.value;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank');});
+// Email modal handlers
+document.getElementById('btn-close-modal').addEventListener('click',()=>{
+    document.getElementById('email-modal').classList.add('hidden');
+});
+document.getElementById('btn-close-modal2').addEventListener('click',()=>{
+    document.getElementById('email-modal').classList.add('hidden');
+});
+document.getElementById('btn-send-invites').addEventListener('click',()=>{
+    var raw=document.getElementById('invite-emails').value;
+    var emails=raw.split(/[,
+]+/).map(function(e){return e.trim();}).filter(function(e){return e.length>0;});
+    if(emails.length===0){alert('Please enter at least one email address.');return;}
+    var nl=String.fromCharCode(10);
+    var slotList=globalSlots.map(function(si){var s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join(nl);
+    var body='Hi,'+nl+nl
+        +'Please mark your availability for "'+globalMeetingTitle+'".'+nl+nl
+        +'Location: '+(globalLocation||'Not specified')+nl+nl
+        +'Proposed times:'+nl+slotList+nl+nl
+        +'Click to respond:'+nl+doodleShareUrl.value+nl+nl
+        +'Thank you.';
+    window.location.href='mailto:'+emails.map(encodeURIComponent).join(',')+'?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(body);
+    document.getElementById('email-modal').classList.add('hidden');
+});
 document.getElementById('btn-mailto').addEventListener('click',()=>{
-    const link=doodleShareUrl.value;
-    const slots2=globalSlots.map(si=>{const s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join(String.fromCharCode(10));
-    const nl=String.fromCharCode(10);
-    const bodyText='Hi,'+nl+nl+'Please mark your availability for "'+globalMeetingTitle+'".'+nl+nl+'Location: '+(globalLocation||'Not specified')+nl+nl+'Proposed times:'+nl+slots2+nl+nl+'Click to respond:'+nl+link+nl+nl+'Thank you.';
-    window.location.href='mailto:?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(bodyText);
+    document.getElementById('invite-emails').value='';
+    document.getElementById('email-modal').classList.remove('hidden');
+    setTimeout(()=>document.getElementById('invite-emails').focus(),100);
 });
 document.getElementById('btn-mailto-self').addEventListener('click',()=>{
     var nl=String.fromCharCode(10);
