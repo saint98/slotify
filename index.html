@@ -43,30 +43,37 @@
 <section id="screen-create" class="fade-in bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-md space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div>
-            <h2 class="text-2xl font-black text-gray-950 mb-1">Schedule a new meeting</h2>
-            <p class="text-gray-500 text-sm">Use the Week or Month view to add your available time slots.</p>
+            <h2 class="text-2xl font-bold text-gray-950 mb-1">Create group poll</h2>
+            <p class="text-gray-500 text-sm">Find the best time for everyone.</p>
         </div>
         <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 self-start sm:self-auto">
             <button id="btn-tab-week" class="view-tab-btn active focus:outline-none">Week</button>
             <button id="btn-tab-month" class="view-tab-btn focus:outline-none">Month</button>
         </div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">What's the occasion? *</label>
-            <input type="text" id="meeting-title" placeholder="e.g. Team sync, Project kickoff"
-                class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location (optional)</label>
-            <input type="text" id="meeting-location" placeholder="e.g. Google Meet, Zoom or Office"
-                class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
-        </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Your email <span class="text-red-500">*</span></label>
+        <input type="email" id="organizer-email" placeholder="your@email.com"
+            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
+        <p class="text-xs text-gray-400 mt-1">We send you the poll link so you can manage it from any device.</p>
     </div>
     <div>
-        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description (optional)</label>
-        <textarea id="meeting-desc" rows="2" placeholder="Add agenda, instructions or other details..."
-            class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors text-sm"></textarea>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-500">*</span></label>
+        <input type="text" id="meeting-title" placeholder="What's the occasion?"
+            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
+    </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+        <textarea id="meeting-desc" rows="3" placeholder="Here you can include things like an agenda, instructions, or other details"
+            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors text-sm"></textarea>
+    </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Location (optional)</label>
+        <div class="relative">
+            <input type="text" id="meeting-location" placeholder="Where will this happen?"
+                class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
+            <span class="absolute right-3 top-3 text-gray-400 text-sm">&#128269;</span>
+        </div>
     </div>
 
     <!-- WEEK VIEW -->
@@ -479,6 +486,8 @@ function withTimeout(promise,ms){return Promise.race([promise,new Promise((_,rej
 
 btnCreatePoll.addEventListener('click',async()=>{
     const title=inputTitle.value.trim(),locationName=inputLocation.value.trim(),desc=inputDesc.value.trim();
+    var organizerEmail=document.getElementById('organizer-email')?document.getElementById('organizer-email').value.trim():'';
+    if(!organizerEmail)return alert('Please enter your email address!');
     if(!title)return alert('Please enter a meeting title!');
     if(tempSlots.length===0)return alert('Please select at least one time slot!');
     const origTxt=btnCreatePoll.innerHTML;
@@ -491,8 +500,27 @@ btnCreatePoll.addEventListener('click',async()=>{
         try{localStorage.setItem('slotify_owned_'+activePollId,'1');}catch(e){}
         globalSlots=[...tempSlots];globalMeetingTitle=title;globalLocation=locationName||"Not specified";globalDesc=desc||"No description.";
         sharePreviewTitle.textContent=globalMeetingTitle;sharePreviewDesc.textContent=globalDesc;sharePreviewLoc.textContent=globalLocation;sharePreviewSlotsCount.textContent=globalSlots.length+' time options';
-        const baseUrl=window.location.href.split('#')[0];doodleShareUrl.value=baseUrl+'#/poll/'+activePollId;
+        const baseUrl=window.location.href.split('#')[0];
+        var adminToken=activePollId.slice(-8);
+        var pollUrl=baseUrl+'#/poll/'+activePollId;
+        var adminUrl=baseUrl+'#/poll/'+activePollId+'?admin='+adminToken;
+        doodleShareUrl.value=pollUrl;
+        // Store admin URL for self-email
+        window._adminUrl=adminUrl;
         setupVoteScreen(globalMeetingTitle,globalLocation,globalDesc,globalSlots);listenToLiveVotes();window.history.pushState(null,null,'#/poll/'+activePollId);switchScreen('share');
+        // Auto-send self email if organizer email provided
+        if(organizerEmail){
+            var nl=String.fromCharCode(10);
+            var slotList2=globalSlots.map(function(si){var s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join(nl);
+            var adminUrl2=window._adminUrl||doodleShareUrl.value;
+            var bt='SLOTIFY - MY POLL LINKS'+nl+nl
+                +'[ORGANIZER LINK - keep private]'+nl+adminUrl2+nl+nl
+                +'[PARTICIPANT LINK - share this]'+nl+doodleShareUrl.value+nl+nl
+                +'Title: '+globalMeetingTitle+nl
+                +'Location: '+(globalLocation||'Not specified')+nl+nl
+                +'Proposed slots:'+nl+slotList2;
+            window.location.href='mailto:'+encodeURIComponent(organizerEmail)+'?subject='+encodeURIComponent('My Slotify poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(bt);
+        }
     }catch(e){
         console.error(e);
         alert(e.message==='TIMEOUT'?'Connection timeout. Check Firebase rules.':'Error: '+e.message);
@@ -545,9 +573,18 @@ document.getElementById('btn-mailto').addEventListener('click',()=>{
     window.location.href='mailto:?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(bodyText);
 });
 document.getElementById('btn-mailto-self').addEventListener('click',()=>{
-    var subject=encodeURIComponent('My Slotify poll: '+globalMeetingTitle);
-    var body=encodeURIComponent('Poll link (keep this safe):\n\n'+doodleShareUrl.value+'\n\nTitle: '+globalMeetingTitle+'\nLocation: '+(globalLocation||'Not specified')+'\nSlots: '+globalSlots.length+' options');
-    window.location.href='mailto:?subject='+subject+'&body='+body;
+    var nl=String.fromCharCode(10);
+    var slotList=globalSlots.map(function(si){var s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join(nl);
+    var adminUrl=window._adminUrl||doodleShareUrl.value;
+    var participantUrl=doodleShareUrl.value;
+    var bodyText='SLOTIFY - MY POLL LINKS'+nl+nl
+        +'[ORGANIZER LINK - keep private]'+nl+adminUrl+nl+nl
+        +'[PARTICIPANT LINK - share this]'+nl+participantUrl+nl+nl
+        +'Title: '+globalMeetingTitle+nl
+        +'Location: '+(globalLocation||'Not specified')+nl+nl
+        +'Proposed slots:'+nl+slotList+nl+nl
+        +'Open the organizer link from any device to edit the poll.';
+    window.location.href='mailto:?subject='+encodeURIComponent('My Slotify poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(bodyText);
 });
 btnGoToVote.addEventListener('click',()=>switchScreen('vote'));
 btnBackToShare.addEventListener('click',()=>{ if(activePollId){if(!doodleShareUrl.value){const baseUrl=window.location.href.split('#')[0];doodleShareUrl.value=baseUrl+'#/poll/'+activePollId;}switchScreen('share');}else{switchScreen('create');}});
@@ -639,6 +676,8 @@ function listenToLiveVotes(){
 }
 
 async function loadPollDirectly(pollId){
+    // Extract clean poll ID (remove any admin token)
+    pollId=pollId.split('?')[0];
     activePollId=pollId;
     try{
         const ds=await getDoc(doc(db,"polls",pollId));
@@ -653,7 +692,17 @@ async function loadPollDirectly(pollId){
 }
 
 function isOrganizer(){
-    try{return localStorage.getItem('slotify_owned_'+activePollId)==='1';}catch(e){return false;}
+    // Check localStorage (created on this browser)
+    try{if(localStorage.getItem('slotify_owned_'+activePollId)==='1')return true;}catch(e){}
+    // Check URL admin token
+    var hash=window.location.hash||'';
+    var qIdx=hash.indexOf('?admin=');
+    if(qIdx>-1){
+        var token=hash.slice(qIdx+7);
+        var expected=activePollId?activePollId.slice(-8):'';
+        if(token===expected&&expected!=='')return true;
+    }
+    return false;
 }
 
 function switchScreen(target){screenCreate.classList.add('hidden');screenShare.classList.add('hidden');screenVote.classList.add('hidden');
@@ -672,9 +721,27 @@ function switchScreen(target){screenCreate.classList.add('hidden');screenShare.c
     }
 }
 
-window.addEventListener('hashchange',()=>{const h=window.location.hash;if(h&&h.startsWith('#/poll/')){const id=h.replace('#/poll/','');if(activePollId!==id)loadPollDirectly(id);}else switchScreen('create');});
+window.addEventListener('hashchange',()=>{
+    const h=window.location.hash;
+    if(h&&h.startsWith('#/poll/')){
+        // Extract poll ID (before any ? params)
+        var raw=h.replace('#/poll/','');
+        var id=raw.split('?')[0];
+        if(activePollId!==id)loadPollDirectly(id);
+        else{
+            // Re-check organizer status (admin param may have changed)
+            var org=isOrganizer();
+            var manageBtn=document.getElementById('btn-back-to-share');
+            var availForm=document.getElementById('voter-availability-section');
+            var orgNote=document.getElementById('organizer-note');
+            if(manageBtn)manageBtn.style.display=org?'':'none';
+            if(availForm)availForm.style.display=org?'none':'block';
+            if(orgNote)orgNote.style.display=org?'block':'none';
+        }
+    }else switchScreen('create');
+});
 
-window.addEventListener('DOMContentLoaded',()=>{renderWeekHeader();updateWeekRangeLabel();initCalendarGrid();buildMiniMonthCalendar();const h=window.location.hash;if(h&&h.startsWith('#/poll/'))loadPollDirectly(h.replace('#/poll/',''));});
+window.addEventListener('DOMContentLoaded',()=>{renderWeekHeader();updateWeekRangeLabel();initCalendarGrid();buildMiniMonthCalendar();const h=window.location.hash;if(h&&h.startsWith('#/poll/')){var pp=h.replace('#/poll/','');loadPollDirectly(pp);}});
 
 // Finalize handler
 document.addEventListener('click', function(e){
