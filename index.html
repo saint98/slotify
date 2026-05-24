@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slotify - Doodle Engine v6.5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .calendar-grid-cell { transition: all 0.15s ease; position: relative; }
+        .calendar-grid-cell:hover:not(.selected-cell):not(.blocked-cell) { background-color: rgba(13, 148, 136, 0.08); }
+
+        .active-duration {
+            background-color: #115e59 !important;
+            color: #ffffff !important;
+            border-color: #115e59 !important;
+        }
+        .view-tab-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #4b5563;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .view-tab-btn.active {
+            background-color: #ffffff;
+            color: #111827;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+        }
+        .mini-month-day {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 600;
+            border-radius: 50%; cursor: pointer;
+            transition: all 0.15s; user-select: none;
+        }
+        .mini-month-day:hover:not(.empty-day) { background-color: #f3f4f6; }
+        .mini-month-day.selected { background-color: #2563eb !important; color: #ffffff !important; }
+        .mini-month-day.empty-day { cursor: default; color: #cbd5e1; }
+        .mini-month-day.today-ring { box-shadow: 0 0 0 2px #0d9488; }
+
+        .slot-h-15  { height: 22px  !important; margin-bottom: -18px; z-index: 20; }
+        .slot-h-30  { height: 44px  !important; z-index: 20; }
+        .slot-h-60  { height: 88px  !important; z-index: 21; }
+        .slot-h-90  { height: 132px !important; z-index: 22; }
+        .slot-h-120 { height: 176px !important; z-index: 23; }
+
+        .allday-badge {
+            background-color: #2563eb !important; color: white !important;
+            border: 1px solid #1d4ed8 !important; border-radius: 6px;
+            font-size: 10px; font-weight: 800; padding: 4px 2px;
+            text-align: center; cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .blocked-cell {
+            background-color: #f3f4f6 !important; opacity: 0.45;
+            cursor: not-allowed !important; pointer-events: none;
+        }
+        .today-col-header { background-color: rgba(13,148,136,0.07); border-radius: 8px; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col justify-between">
+
+<header class="border-b border-gray-200 bg-white px-6 py-4 flex justify-between items-center shadow-sm">
+    <div class="flex items-center space-x-2">
+        <span class="text-2xl font-black tracking-wider text-teal-600 cursor-pointer" id="logo">⚡ SLOTIFY</span>
+        <span class="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-mono">v6.5</span>
+    </div>
+    <div class="text-xs text-teal-800 bg-teal-50 border border-teal-100 px-3 py-1 rounded-xl font-bold hidden md:block">
+        📅 Dinamik Takvim & Hafta Gezgini Aktif
+    </div>
+</header>
+
+<main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
+
+    <!-- ═══════════════════════ SCREEN: CREATE ═══════════════════════ -->
+    <section id="screen-create" class="fade-in bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-md space-y-6">
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+            <div>
+                <h2 class="text-2xl font-black text-gray-950 mb-1">Yeni Toplantı Slotu Oluştur</h2>
+                <p class="text-gray-500 text-sm">Zaman seçeneklerini belirlemek için Week veya Month görünümünü kullanabilirsiniz.</p>
+            </div>
+            <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 self-start sm:self-auto">
+                <button id="btn-tab-week" class="view-tab-btn active focus:outline-none">Week</button>
+                <button id="btn-tab-month" class="view-tab-btn focus:outline-none">Month</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Toplantı Konusu / Başlığı *</label>
+                <input type="text" id="meeting-title" placeholder="Örn: Proje Sprint & Tasarım Değerlendirmesi"
+                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Konum / Platform (Location)</label>
+                <input type="text" id="meeting-location" placeholder="Örn: Google Meet, Zoom veya Ofis"
+                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Açıklama / Gündem Notları</label>
+            <textarea id="meeting-desc" rows="2" placeholder="Katılımcıların oylama yaparken göreceği detaylar..."
+                class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors text-sm"></textarea>
+        </div>
+
+        <!-- ─── WEEK VIEW ─── -->
+        <div id="panel-view-week" class="space-y-6">
+            <div>
+                <label class="block text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">👉 Eklenecek Slotun Süresini Seçin</label>
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="15">15 dk</button>
+                    <button type="button" class="btn-duration active-duration border px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="30">30 dk</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="60">60 dk</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="90">90 dk</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="120">120 dk</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-blue-600 border-blue-200 px-3 py-2.5 rounded-xl text-xs font-black transition-all focus:outline-none" data-mins="allday">Tüm Gün 📅</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Haftalık Takvim</label>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-prev-week"
+                            class="text-xs font-bold text-gray-600 hover:text-teal-700 bg-gray-100 hover:bg-teal-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-all focus:outline-none">
+                            ◀ Önceki
+                        </button>
+                        <span id="week-range-label" class="text-xs font-bold text-gray-700 min-w-[170px] text-center select-none"></span>
+                        <button id="btn-next-week"
+                            class="text-xs font-bold text-gray-600 hover:text-teal-700 bg-gray-100 hover:bg-teal-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-all focus:outline-none">
+                            Sonraki ▶
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-2xl p-4 overflow-x-auto shadow-sm">
+                    <!-- Header row – filled by JS -->
+                    <div id="week-header-row" class="grid grid-cols-8 gap-1 text-center text-xs font-bold border-b border-gray-200 pb-2 min-w-[650px]"></div>
+                    <!-- All-day row -->
+                    <div class="grid grid-cols-8 gap-1 text-center py-2 border-b-2 border-gray-200 bg-gray-50/50 min-w-[650px]" id="all-day-row"></div>
+                    <!-- Hour rows -->
+                    <div id="calendar-grid-body" class="divide-y divide-gray-100 min-w-[650px] mt-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── MONTH VIEW ─── -->
+        <div id="panel-view-month" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+            <div class="lg:col-span-5 border border-gray-200 rounded-2xl p-4 bg-white shadow-sm h-fit">
+                <div class="flex items-center justify-between mb-4 px-1">
+                    <span id="month-label" class="text-sm font-black text-gray-800"></span>
+                    <div class="flex gap-3 text-xs text-gray-500 font-bold">
+                        <button id="btn-prev-month" class="cursor-pointer hover:text-teal-600 transition-colors focus:outline-none px-1">◀</button>
+                        <button id="btn-next-month" class="cursor-pointer hover:text-teal-600 transition-colors focus:outline-none px-1">▶</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-gray-400 uppercase mb-2">
+                    <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+                </div>
+                <div id="mini-month-grid" class="grid grid-cols-7 gap-y-2 justify-items-center"></div>
+            </div>
+            <div class="lg:col-span-7 bg-gray-50 border border-gray-200 rounded-2xl p-5 min-h-[320px] flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                        <span>📋</span> Günlük Saat & Süre Ekleme Listesi
+                    </h3>
+                    <div id="month-days-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected slots list -->
+        <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Oluşturulan Toplam Slot Kombinasyonu</h4>
+            <div id="selected-slots-list" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <button id="btn-create-poll"
+            class="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-6 rounded-xl transition-all shadow-md active:scale-[0.99] text-base">
+            Anket Linkini Uçur 🚀
+        </button>
+    </section>
+
+    <!-- ═══════════════════════ SCREEN: SHARE ════════════════════════ -->
+    <section id="screen-share" class="fade-in hidden grid grid-cols-1 md:grid-cols-12 bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-xl min-h-[460px]">
+        <div class="md:col-span-5 bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white flex flex-col justify-between border-r border-gray-100">
+            <div class="space-y-4">
+                <div class="inline-block bg-teal-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider shadow">
+                    ✓ Anket Oluşturuldu
+                </div>
+                <h3 id="share-preview-title" class="text-2xl font-black leading-tight text-white tracking-tight">Yükleniyor...</h3>
+                <p id="share-preview-desc" class="text-slate-300 text-sm font-normal line-clamp-4 leading-relaxed"></p>
+            </div>
+            <div class="pt-6 border-t border-slate-700/60 space-y-2.5">
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <span>📍 Konum:</span>
+                    <strong id="share-preview-loc" class="text-slate-200">Belirtilmedi</strong>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <span>📅 Seçenekler:</span>
+                    <strong id="share-preview-slots-count" class="text-slate-200">0 Slot Önerildi</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="md:col-span-7 p-6 md:p-8 flex flex-col justify-between bg-white space-y-6">
+            <div class="space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-gray-950">Davet et ve paylaş</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Katılımcıların oy vermesi için linki iletin.</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button id="btn-admin-edit" class="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">✏️ Düzenle</button>
+                        <button id="btn-admin-delete" class="flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">🗑️ Sil</button>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Anket Katılım Linki</label>
+                    <div class="flex bg-gray-50 border border-gray-300 rounded-xl p-1.5 focus-within:border-teal-500 transition-colors">
+                        <input type="text" id="doodle-share-url" readonly
+                            class="bg-transparent text-gray-800 text-sm font-mono px-3 py-2 flex-grow focus:outline-none">
+                        <button id="btn-doodle-copy"
+                            class="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition-all shadow-sm shrink-0">
+                            Linki Kopyala
+                        </button>
+                    </div>
+                    <!-- Warning shown only when running from file:// -->
+                    <div id="local-file-warning" class="hidden mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">
+                        ⚠️ Şu an yerel dosyadan çalıştırıyorsunuz. Bu link yalnızca sizin bilgisayarınızda açılır. Paylaşılabilir link için Slotify'ı bir web sunucusuna veya hosting hizmetine yükleyin.
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <button id="btn-share-wa-direct"
+                        class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 font-bold p-3 rounded-xl text-xs transition-colors">
+                        💬 WhatsApp ile Paylaş
+                    </button>
+                    <button id="btn-mailto"
+                        class="flex items-center justify-center gap-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold p-3 rounded-xl text-xs transition-colors">
+                        ✉️ E-posta Daveti Gönder
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-gray-400">Anlık oyları ve takvim istatistiklerini takip edin.</p>
+                <button id="btn-go-to-vote"
+                    class="w-full sm:w-auto bg-gray-950 hover:bg-gray-800 text-white font-black py-3 px-6 rounded-xl text-xs transition-all shadow tracking-wide uppercase">
+                    Canlı Oylama Sayfasına Git 📊
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════ SCREEN: VOTE ════════════════════════ -->
+    <section id="screen-vote" class="fade-in hidden bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-md space-y-6">
+        <div class="border-b border-gray-200 pb-3 flex justify-between items-start gap-4">
+            <div>
+                <span class="text-[10px] font-mono bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full uppercase tracking-widest">● CANLI KÖPRÜ AKTİF</span>
+                <h2 id="vote-title" class="text-2xl font-black text-gray-950 mt-1">Yükleniyor...</h2>
+                <p id="vote-details" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+            <button id="btn-back-to-share" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">
+                ⚙️ Yönetim Paneli
+            </button>
+        </div>
+
+        <!-- Katılım formu -->
+        <div class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm border-l-4 border-l-teal-600">
+            <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-wider">Kendi Katılımını Bildir</h3>
+            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-4">
+                <div class="w-full sm:w-64">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Adın Soyadın</label>
+                    <input type="text" id="voter-name" placeholder="Örn: Mert"
+                        class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-950 focus:outline-none focus:border-teal-500">
+                </div>
+                <div class="pt-5">
+                    <p class="text-xs text-gray-500">İsim gir → her slotu işaretle → kaydet</p>
+                </div>
+            </div>
+            <div class="mb-2 flex items-center justify-between">
+                <label class="text-xs font-bold text-gray-600 uppercase tracking-wider">Hangi saatler sana uygun?</label>
+                <div class="flex gap-2 text-[10px] font-bold">
+                    <span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">✅ Uygunum</span>
+                    <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">— Uygun değilim</span>
+                </div>
+            </div>
+            <div id="slot-availability-grid" class="space-y-2 max-h-72 overflow-y-auto pr-1 mb-4"></div>
+            <button id="btn-submit-vote"
+                class="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.98]">
+                Seçimlerimi Kaydet ⚡
+            </button>
+        </div>
+
+        <!-- İstatistikler -->
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-5">
+            <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">📊 Ortak Müsaitlik Durumu</h3>
+            <div id="slot-stats-container" class="space-y-2"></div>
+        </div>
+
+        <!-- Katılımcı listesi -->
+        <div>
+            <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Katılımcılar</h3>
+            <div id="voters-list" class="flex flex-wrap gap-2"></div>
+        </div>
+    </section>
+</main>
+
+<footer class="text-center py-4 text-[11px] text-gray-400 border-t border-gray-200 bg-white shadow-inner">
+    Slotify © 2026 — Işık Hızında Doodle Planlama Motoru.
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+    getFirestore, doc, getDoc, deleteDoc, updateDoc, setDoc,
+    collection, addDoc, getDocs, onSnapshot, query, where, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// ── Firebase config ────────────────────────────────────────────────────
+const firebaseConfig = {
+    apiKey: "AIzaSyA88NrwF3U3-usUhlHfJLaWiyjkP7kV0dw",
+    authDomain: "slotify-33d2c.firebaseapp.com",
+    projectId: "slotify-33d2c",
+    storageBucket: "slotify-33d2c.firebasestorage.app",
+    messagingSenderId: "11338684770",
+    appId: "1:11338684770:web:32df846532a15f4c0c743b"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── App state ──────────────────────────────────────────────────────────
+let activePollId       = null;
+let unsubscribeLiveVotes = null;
+let globalMeetingTitle = "";
+let globalLocation     = "";
+let globalDesc         = "";
+let globalSlots        = [];
+let globalVotesData    = [];
+let selectedDuration   = 30;
+let tempSlots          = [];
+let currentWeekOffset  = 0;
+const _now = new Date();
+let currentMonthState  = { year: _now.getFullYear(), month: _now.getMonth() };
+
+// ── Dynamic week helpers ───────────────────────────────────────────────
+function getWeekDays(offset) {
+    const today = new Date();
+    const dow = today.getDay();                         // 0=Sun
+    const diffToMon = dow === 0 ? -6 : 1 - dow;        // steps to Monday
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diffToMon + offset * 7);
+    monday.setHours(0, 0, 0, 0);
+    const names = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return { name: names[i], dateStr: d.toISOString().split('T')[0], date: d };
+    });
+}
+let daysData = getWeekDays(0);
+
+// ── DOM refs ───────────────────────────────────────────────────────────
+const screenCreate     = document.getElementById('screen-create');
+const screenShare      = document.getElementById('screen-share');
+const screenVote       = document.getElementById('screen-vote');
+const panelViewWeek    = document.getElementById('panel-view-week');
+const panelViewMonth   = document.getElementById('panel-view-month');
+const btnCreatePoll    = document.getElementById('btn-create-poll');
+const btnSubmitVote    = document.getElementById('btn-submit-vote');
+const btnDoodleCopy    = document.getElementById('btn-doodle-copy');
+const btnShareWaDirect = document.getElementById('btn-share-wa-direct');
+const btnGoToVote      = document.getElementById('btn-go-to-vote');
+const btnBackToShare   = document.getElementById('btn-back-to-share');
+const btnAdminEdit     = document.getElementById('btn-admin-edit');
+const btnAdminDelete   = document.getElementById('btn-admin-delete');
+const inputTitle       = document.getElementById('meeting-title');
+const inputLocation    = document.getElementById('meeting-location');
+const inputDesc        = document.getElementById('meeting-desc');
+const selectedSlotsList= document.getElementById('selected-slots-list');
+const allDayRow        = document.getElementById('all-day-row');
+const calendarGridBody = document.getElementById('calendar-grid-body');
+const miniMonthGrid    = document.getElementById('mini-month-grid');
+const monthDaysContainer=document.getElementById('month-days-container');
+const weekHeaderRow    = document.getElementById('week-header-row');
+const weekRangeLabel   = document.getElementById('week-range-label');
+const sharePreviewTitle= document.getElementById('share-preview-title');
+const sharePreviewDesc = document.getElementById('share-preview-desc');
+const sharePreviewLoc  = document.getElementById('share-preview-loc');
+const sharePreviewSlotsCount = document.getElementById('share-preview-slots-count');
+const doodleShareUrl   = document.getElementById('doodle-share-url');
+const voteTitle        = document.getElementById('vote-title');
+const voteDetails      = document.getElementById('vote-details');
+// slotSelect removed - using multi-slot grid instead
+const votesTableBody   = document.getElementById('votes-table-body');
+const inputVoterName   = document.getElementById('voter-name');
+const slotStatsContainer = document.getElementById('slot-stats-container');
+const btnTabWeek       = document.getElementById('btn-tab-week');
+const btnTabMonth      = document.getElementById('btn-tab-month');
+
+// ── Render week header dynamically ─────────────────────────────────────
+function renderWeekHeader() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    weekHeaderRow.innerHTML = '';
+
+    // First cell: label column
+    const labelCell = document.createElement('div');
+    labelCell.className = "text-gray-400 text-left pl-2 flex items-center text-xs font-bold";
+    labelCell.textContent = "Günler";
+    weekHeaderRow.appendChild(labelCell);
+
+    daysData.forEach(day => {
+        const isWeekend = day.date.getDay() === 6 || day.date.getDay() === 0;
+        const isToday   = day.dateStr === todayStr;
+        const dateDisplay = day.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+
+        const col = document.createElement('div');
+        col.className = `text-center py-1 ${isToday ? 'today-col-header' : ''}`;
+        col.innerHTML = `
+            <span class="text-xs font-bold ${isWeekend ? 'text-teal-600' : 'text-gray-800'}">${day.name}</span><br>
+            <span class="text-[10px] font-normal ${isWeekend ? 'text-teal-400' : 'text-gray-400'}">${dateDisplay}</span>
+            ${isToday ? '<br><span class="text-[8px] font-black text-teal-500">● BUGÜN</span>' : ''}
+        `;
+        weekHeaderRow.appendChild(col);
+    });
+}
+
+function updateWeekRangeLabel() {
+    const fmt = { day: 'numeric', month: 'long' };
+    const start = daysData[0].date.toLocaleDateString('tr-TR', fmt);
+    const end   = daysData[6].date.toLocaleDateString('tr-TR', { ...fmt, year: 'numeric' });
+    weekRangeLabel.textContent = `${start} – ${end}`;
+}
+
+// ── Week navigation ────────────────────────────────────────────────────
+document.getElementById('btn-prev-week').addEventListener('click', () => {
+    currentWeekOffset--;
+    daysData = getWeekDays(currentWeekOffset);
+    renderWeekHeader();
+    updateWeekRangeLabel();
+    initCalendarGrid();
+});
+document.getElementById('btn-next-week').addEventListener('click', () => {
+    currentWeekOffset++;
+    daysData = getWeekDays(currentWeekOffset);
+    renderWeekHeader();
+    updateWeekRangeLabel();
+    initCalendarGrid();
+});
+
+// ── Month navigation ───────────────────────────────────────────────────
+document.getElementById('btn-prev-month').addEventListener('click', () => {
+    currentMonthState.month--;
+    if (currentMonthState.month < 0) { currentMonthState.month = 11; currentMonthState.year--; }
+    buildMiniMonthCalendar();
+});
+document.getElementById('btn-next-month').addEventListener('click', () => {
+    currentMonthState.month++;
+    if (currentMonthState.month > 11) { currentMonthState.month = 0; currentMonthState.year++; }
+    buildMiniMonthCalendar();
+});
+
+// ── View tab switching ─────────────────────────────────────────────────
+btnTabWeek.addEventListener('click', () => {
+    btnTabWeek.classList.add('active');   btnTabMonth.classList.remove('active');
+    panelViewWeek.classList.remove('hidden'); panelViewMonth.classList.add('hidden');
+    syncGridUiWithSlots();
+});
+btnTabMonth.addEventListener('click', () => {
+    btnTabMonth.classList.add('active');  btnTabWeek.classList.remove('active');
+    panelViewMonth.classList.remove('hidden'); panelViewWeek.classList.add('hidden');
+    buildMiniMonthCalendar(); renderMonthDaysUi();
+});
+
+// ── Duration buttons ───────────────────────────────────────────────────
+const durationButtons = document.querySelectorAll('.btn-duration');
+durationButtons.forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        durationButtons.forEach(b => {
+            b.classList.remove('active-duration');
+            b.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+        });
+        this.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+        this.classList.add('active-duration');
+        selectedDuration = this.getAttribute('data-mins') === "allday"
+            ? "allday"
+            : parseInt(this.getAttribute('data-mins'));
+    });
+});
+
+// ── Calendar grid ──────────────────────────────────────────────────────
+function initCalendarGrid() {
+    // All-day row
+    allDayRow.innerHTML = `<div class="text-left text-[11px] font-black text-blue-700 flex items-center pl-1 uppercase tracking-wider">Tüm Gün</div>`;
+    daysData.forEach(day => {
+        const dayCell = document.createElement('div');
+        dayCell.setAttribute('data-allday-date', day.dateStr);
+        dayCell.className = "border border-dashed border-gray-300 rounded-lg p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer hover:bg-blue-50/50 transition-colors";
+        dayCell.innerHTML = `<span>+ Tüm Gün</span>`;
+        dayCell.addEventListener('click', () => handleAllDayClick(day.dateStr));
+        allDayRow.appendChild(dayCell);
+    });
+
+    // Hour rows
+    calendarGridBody.innerHTML = '';
+    for (let hour = 8; hour <= 20; hour++) {
+        const hourStr = hour < 10 ? `0${hour}:00` : `${hour}:00`;
+        const row = document.createElement('div');
+        row.className = "grid grid-cols-8 gap-1 py-1.5 items-center text-center";
+        row.innerHTML = `<div class="text-left text-xs font-mono text-gray-400 font-bold pl-1">${hourStr}</div>`;
+        daysData.forEach(day => {
+            const cell = document.createElement('div');
+            cell.setAttribute('data-date', day.dateStr);
+            cell.setAttribute('data-hour', hourStr);
+            cell.className = "calendar-grid-cell bg-white border border-gray-200 rounded-lg h-10 flex items-center justify-center text-gray-300 font-bold cursor-pointer select-none text-xs shadow-sm";
+            cell.innerHTML = `<span>+</span>`;
+            cell.addEventListener('click', () => {
+                if (selectedDuration === "allday") handleAllDayClick(day.dateStr);
+                else handleHourClick(day.dateStr, hourStr);
+            });
+            row.appendChild(cell);
+        });
+        calendarGridBody.appendChild(row);
+    }
+    syncGridUiWithSlots();
+    renderTempSlots();
+}
+
+function handleAllDayClick(dateStr) {
+    const existing = tempSlots.findIndex(s => s.dateKey === dateStr && s.duration === "allday");
+    if (existing > -1) { tempSlots.splice(existing, 1); }
+    else {
+        tempSlots = tempSlots.filter(s => s.dateKey !== dateStr);
+        tempSlots.push({
+            start: new Date(`${dateStr}T00:00:00`).toISOString(),
+            duration: "allday",
+            display: `📅 ${dateStr} (Tüm Gün)`,
+            dateKey: dateStr, hourKey: "allday"
+        });
+    }
+    syncGridUiWithSlots(); renderTempSlots();
+}
+
+function handleHourClick(dateStr, hourStr) {
+    tempSlots = tempSlots.filter(s => !(s.dateKey === dateStr && s.duration === "allday"));
+    const startObj = new Date(`${dateStr}T${hourStr}:00`);
+    const endObj   = new Date(startObj.getTime() + selectedDuration * 60000);
+    const fmt      = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+    const startDisplay = startObj.toLocaleString('tr-TR', fmt);
+    const endHourStr   = endObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+    const existing = tempSlots.findIndex(s => s.dateKey === dateStr && s.hourKey === hourStr);
+    if (existing > -1) { tempSlots.splice(existing, 1); }
+    else {
+        tempSlots.push({
+            start: startObj.toISOString(),
+            duration: selectedDuration,
+            display: `📅 ${startDisplay} - ${endHourStr} (${selectedDuration} dk)`,
+            dateKey: dateStr, hourKey: hourStr
+        });
+    }
+    syncGridUiWithSlots(); renderTempSlots();
+}
+
+// ── Month calendar ─────────────────────────────────────────────────────
+function buildMiniMonthCalendar() {
+    miniMonthGrid.innerHTML = '';
+    const { year, month } = currentMonthState;
+
+    // Label (e.g. "Mayıs 2026")
+    const raw = new Date(year, month, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+    document.getElementById('month-label').textContent = raw.charAt(0).toUpperCase() + raw.slice(1);
+
+    const firstDow    = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startOffset = firstDow === 0 ? 6 : firstDow - 1; // Monday-based
+    const todayStr    = new Date().toISOString().split('T')[0];
+
+    for (let i = 0; i < startOffset; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'mini-month-day empty-day';
+        miniMonthGrid.appendChild(empty);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+        const mm = String(month + 1).padStart(2, '0');
+        const dd = String(day).padStart(2, '0');
+        const fullDateStr = `${year}-${mm}-${dd}`;
+        const isSelected  = tempSlots.some(s => s.dateKey === fullDateStr);
+        const isToday     = fullDateStr === todayStr;
+
+        const dayCell = document.createElement('div');
+        dayCell.className = `mini-month-day ${isSelected ? 'selected' : ''} ${isToday && !isSelected ? 'today-ring' : ''}`;
+        dayCell.textContent = day;
+        dayCell.addEventListener('click', () => toggleMonthDateSelection(fullDateStr));
+        miniMonthGrid.appendChild(dayCell);
+    }
+}
+
+function toggleMonthDateSelection(dateStr) {
+    if (tempSlots.some(s => s.dateKey === dateStr)) {
+        tempSlots = tempSlots.filter(s => s.dateKey !== dateStr);
+    } else {
+        tempSlots.push({
+            start: new Date(`${dateStr}T09:00:00`).toISOString(),
+            duration: 60, dateKey: dateStr, hourKey: "09:00",
+            display: `📅 ${dateStr} 09:00 - 10:00 (60 dk)`
+        });
+    }
+    buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
+}
+
+function renderMonthDaysUi() {
+    monthDaysContainer.innerHTML = '';
+    const activeDates = [...new Set(tempSlots.map(s => s.dateKey))].sort();
+    if (activeDates.length === 0) {
+        monthDaysContainer.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-16">Soldaki takvimden bir veya birden fazla güne tıklayarak saat planlaması oluşturun.</p>`;
+        return;
+    }
+    activeDates.forEach(dateStr => {
+        const daySlots = tempSlots.filter(s => s.dateKey === dateStr);
+        const card = document.createElement('div');
+        card.className = "bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3 fade-in";
+
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const localDate = new Date(y, m - 1, d);
+        const headerRow = document.createElement('div');
+        headerRow.className = "flex justify-between items-center border-b border-gray-100 pb-2";
+        headerRow.innerHTML = `<span class="text-xs font-black text-blue-600 uppercase tracking-wider">${localDate.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>`;
+
+        const btnRemoveGroup = document.createElement('button');
+        btnRemoveGroup.className = "text-gray-400 hover:text-red-500 text-xs font-bold";
+        btnRemoveGroup.textContent = "Günü Kaldır";
+        btnRemoveGroup.onclick = () => {
+            tempSlots = tempSlots.filter(s => s.dateKey !== dateStr);
+            buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
+        };
+        headerRow.appendChild(btnRemoveGroup);
+        card.appendChild(headerRow);
+
+        daySlots.forEach(slot => {
+            const row = document.createElement('div');
+            row.className = "flex flex-wrap items-center gap-3 bg-gray-50/50 p-2 rounded-lg border border-gray-100";
+
+            const timeDiv = document.createElement('div');
+            timeDiv.className = "flex flex-col";
+            timeDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Başlangıç</span>`;
+            const timeInput = document.createElement('input');
+            timeInput.type = "time";
+            timeInput.value = slot.hourKey === "allday" ? "09:00" : slot.hourKey;
+            timeInput.className = "bg-white border border-gray-200 rounded-md px-2 py-1 text-xs font-mono text-gray-800 outline-none focus:border-blue-500";
+            timeInput.onchange = e => updateMonthSlotData(slot, 'time', e.target.value);
+            timeDiv.appendChild(timeInput); row.appendChild(timeDiv);
+
+            const durDiv = document.createElement('div');
+            durDiv.className = "flex flex-col";
+            durDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Süre</span>`;
+            const durSelect = document.createElement('select');
+            durSelect.className = "bg-white border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-800 outline-none focus:border-blue-500";
+            durSelect.innerHTML = `
+                <option value="15"     ${slot.duration === 15     ? 'selected' : ''}>15 dk</option>
+                <option value="30"     ${slot.duration === 30     ? 'selected' : ''}>30 dk</option>
+                <option value="60"     ${slot.duration === 60     ? 'selected' : ''}>1 saat</option>
+                <option value="90"     ${slot.duration === 90     ? 'selected' : ''}>90 dk</option>
+                <option value="120"    ${slot.duration === 120    ? 'selected' : ''}>2 saat</option>
+                <option value="allday" ${slot.duration === 'allday'? 'selected' : ''}>Tüm Gün</option>
+            `;
+            durSelect.onchange = e => updateMonthSlotData(slot, 'duration', e.target.value);
+            durDiv.appendChild(durSelect); row.appendChild(durDiv);
+
+            const btnDel = document.createElement('button');
+            btnDel.className = "text-gray-300 hover:text-red-500 font-bold text-sm mt-4 ml-auto";
+            btnDel.innerHTML = "✕";
+            btnDel.onclick = () => {
+                tempSlots = tempSlots.filter(s => s !== slot);
+                if (!tempSlots.some(s => s.dateKey === dateStr)) buildMiniMonthCalendar();
+                renderMonthDaysUi(); renderTempSlots();
+            };
+            row.appendChild(btnDel); card.appendChild(row);
+        });
+
+        const btnAddTimes = document.createElement('button');
+        btnAddTimes.className = "text-blue-600 hover:text-blue-700 text-xs font-black block pt-1";
+        btnAddTimes.innerHTML = "+ Saat Ekle";
+        btnAddTimes.onclick = () => {
+            let nextHour = "10:00";
+            if (daySlots.length > 0 && daySlots[daySlots.length - 1].hourKey !== "allday") {
+                const h = parseInt(daySlots[daySlots.length - 1].hourKey.split(':')[0]) + 1;
+                nextHour = (h < 10 ? `0${h}` : `${h}`) + ":00";
+            }
+            tempSlots.push({
+                start: new Date(`${dateStr}T${nextHour}:00`).toISOString(),
+                duration: 60, dateKey: dateStr, hourKey: nextHour,
+                display: `📅 ${dateStr} ${nextHour} - ${nextHour} (60 dk)`
+            });
+            updateMonthSlotData(tempSlots[tempSlots.length - 1], 'time', nextHour);
+        };
+        card.appendChild(btnAddTimes);
+        monthDaysContainer.appendChild(card);
+    });
+}
+
+function updateMonthSlotData(slotRef, type, value) {
+    if (type === 'time')     slotRef.hourKey  = value;
+    else if (type === 'duration') slotRef.duration = value === 'allday' ? 'allday' : parseInt(value);
+
+    if (slotRef.duration === 'allday') {
+        slotRef.hourKey = "allday";
+        slotRef.start   = new Date(`${slotRef.dateKey}T00:00:00`).toISOString();
+        slotRef.display = `📅 ${slotRef.dateKey} (Tüm Gün)`;
+    } else {
+        if (slotRef.hourKey === "allday") slotRef.hourKey = "09:00";
+        const startObj = new Date(`${slotRef.dateKey}T${slotRef.hourKey}:00`);
+        const endObj   = new Date(startObj.getTime() + slotRef.duration * 60000);
+        slotRef.start  = startObj.toISOString();
+        const fmt      = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+        slotRef.display = `📅 ${startObj.toLocaleString('tr-TR', fmt)} - ${endObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} (${slotRef.duration} dk)`;
+    }
+    renderMonthDaysUi(); renderTempSlots();
+}
+
+// ── Sync grid UI with tempSlots ────────────────────────────────────────
+function syncGridUiWithSlots() {
+    document.querySelectorAll('.calendar-grid-cell').forEach(cell => {
+        cell.className = "calendar-grid-cell bg-white border border-gray-200 rounded-lg h-10 flex items-center justify-center text-gray-300 font-bold cursor-pointer select-none text-xs shadow-sm";
+        cell.innerHTML = `<span>+</span>`;
+    });
+    daysData.forEach(day => {
+        const adCell = document.querySelector(`[data-allday-date="${day.dateStr}"]`);
+        if (adCell) {
+            adCell.className = "border border-dashed border-gray-300 rounded-lg p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer hover:bg-blue-50/50 transition-colors";
+            adCell.innerHTML = `<span>+ Tüm Gün</span>`;
+        }
+    });
+    tempSlots.forEach(slot => {
+        if (slot.duration === "allday") {
+            const adCell = document.querySelector(`[data-allday-date="${slot.dateKey}"]`);
+            if (adCell) {
+                adCell.className = "allday-badge flex items-center justify-center relative";
+                adCell.innerHTML = `<span>✓ Tüm Gün</span><div class="absolute top-0.5 right-1 text-[9px] text-white font-bold">✕</div>`;
+            }
+            document.querySelectorAll(`[data-date="${slot.dateKey}"]`).forEach(cell => {
+                cell.classList.add('blocked-cell'); cell.innerHTML = `🔒`;
+            });
+        } else {
+            const activeCell = document.querySelector(`[data-date="${slot.dateKey}"][data-hour="${slot.hourKey}"]`);
+            if (activeCell) {
+                const [sH, sM] = slot.hourKey.split(':').map(Number);
+                const startTotalMins = sH * 60 + sM;
+                const endTotalMins   = startTotalMins + slot.duration;
+                const endStr = `${String(Math.floor(endTotalMins/60)).padStart(2,'0')}:${String(endTotalMins%60).padStart(2,'0')}`;
+
+                // Kaç ara satır kaplanacak?
+                const coveredHours = [];
+                for (let h = 8; h <= 20; h++) {
+                    if (h * 60 > startTotalMins && h * 60 < endTotalMins) coveredHours.push(h);
+                }
+                const hasCovers = coveredHours.length > 0;
+
+                // Ana blok — alt satır varsa sadece üst köşeleri yuvarlat
+                activeCell.className = `calendar-grid-cell bg-teal-500 text-white selected-cell flex items-start justify-between font-bold cursor-pointer select-none text-xs shadow-md slot-h-${slot.duration} overflow-hidden`;
+                const borderBottom = hasCovers ? 'none' : '1px solid rgb(15,118,110)';
+                activeCell.style.cssText = 'border: 1px solid rgb(15,118,110); border-bottom:' + borderBottom + '; border-radius:' + (hasCovers ? '10px 10px 0 0' : '10px') + '; position: relative; z-index: 21;';
+                activeCell.innerHTML = `
+                    <div class="flex flex-col justify-start h-full w-full p-1.5 leading-tight">
+                        <span class="font-black text-[11px] text-white">${slot.hourKey} – ${endStr}</span>
+                        <span class="text-[9px] text-teal-100 font-normal mt-0.5">${slot.duration} dk</span>
+                    </div>
+                    <div class="text-white text-[11px] font-black p-1 opacity-70 hover:opacity-100 shrink-0">✕</div>
+                `;
+
+                // Alt satırları üst blokla aynı renkte doldur — kesintisiz tek blok
+                coveredHours.forEach((h, idx) => {
+                    const isLast = idx === coveredHours.length - 1;
+                    const hStr = (h < 10 ? '0' + h : h) + ':00';
+                    const coveredCell = document.querySelector('[data-date="' + slot.dateKey + '"][data-hour="' + hStr + '"]');
+                    if (coveredCell) {
+                        coveredCell.className = 'calendar-grid-cell select-none';
+                        coveredCell.innerHTML = '';
+                        const radius = isLast ? '0 0 10px 10px' : '0';
+                        // margin-top: -20px → ana bloğun arkasına 20px gömülür, gap tamamen kapanır
+                        coveredCell.style.cssText = 'background:rgb(20,184,166);border:1px solid rgb(15,118,110);border-top:none;border-radius:' + radius + ';height:60px;margin-top:-20px;position:relative;z-index:19;pointer-events:none;cursor:default;';
+                    }
+                });
+            }
+        }
+    });
+}
+
+// ── Render slot badges ─────────────────────────────────────────────────
+function renderTempSlots() {
+    selectedSlotsList.innerHTML = '';
+    if (tempSlots.length === 0) {
+        selectedSlotsList.innerHTML = `<p class="text-xs text-gray-400 italic">Takvimden veya Ay listesinden slot kombinasyonları oluşturun...</p>`;
+        return;
+    }
+    tempSlots.forEach((slot, index) => {
+        const badge = document.createElement('div');
+        badge.className = `${slot.duration === 'allday' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-teal-50 text-teal-700 border-teal-200'} border rounded-full px-3 py-1.5 text-xs font-mono flex items-center gap-2 fade-in shadow-sm`;
+        badge.innerHTML = `<span>${slot.display}</span><button class="text-red-500 hover:text-red-700 font-bold focus:outline-none" data-index="${index}">✕</button>`;
+        selectedSlotsList.appendChild(badge);
+    });
+    selectedSlotsList.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', e => {
+            tempSlots.splice(parseInt(e.target.getAttribute('data-index')), 1);
+            syncGridUiWithSlots(); buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
+        });
+    });
+}
+
+// ── Timeout helper — Firebase bazen yanıt vermez, bunu önler ─────────
+function withTimeout(promise, ms) {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('TIMEOUT')), ms)
+        )
+    ]);
+}
+
+// ── Create poll ────────────────────────────────────────────────────────
+btnCreatePoll.addEventListener('click', async () => {
+    const title        = inputTitle.value.trim();
+    const locationName = inputLocation.value.trim();
+    const desc         = inputDesc.value.trim();
+
+    if (!title)                 return alert('Lütfen bir toplantı başlığı girin!');
+    if (tempSlots.length === 0) return alert('En az bir zaman veya gün seçmelisiniz!');
+
+    const originalBtnText = btnCreatePoll.innerHTML;
+    btnCreatePoll.innerHTML = activePollId ? "Anket Güncelleniyor... ⏳" : "Anket Buluta Yükleniyor... ⏳";
+    btnCreatePoll.disabled = true;
+
+    try {
+        const slotData = { title, location: locationName, desc, slots: tempSlots.map(s => JSON.stringify(s)) };
+
+        if (activePollId) {
+            // GÜNCELLEME — aynı ID korunur, oylar silinmez
+            await withTimeout(setDoc(doc(db, "polls", activePollId), slotData, { merge: true }), 12000);
+        } else {
+            // YENİ OLUŞTUR
+            const pollRef = await withTimeout(
+                addDoc(collection(db, "polls"), { ...slotData, createdAt: serverTimestamp() }),
+                12000
+            );
+            activePollId = pollRef.id;
+        }
+
+        globalSlots        = [...tempSlots];
+        globalMeetingTitle = title;
+        globalLocation     = locationName || "Belirtilmedi";
+        globalDesc         = desc || "Açıklama girilmedi.";
+
+        sharePreviewTitle.textContent = globalMeetingTitle;
+        sharePreviewDesc.textContent  = globalDesc;
+        sharePreviewLoc.textContent   = globalLocation;
+        sharePreviewSlotsCount.textContent = `${globalSlots.length} Farklı Alternatif`;
+
+        const baseUrl = window.location.href.split('#')[0];
+        doodleShareUrl.value = `${baseUrl}#/poll/${activePollId}`;
+
+        // Show warning if running from local file
+        if (baseUrl.startsWith('file://')) {
+            document.getElementById('local-file-warning').classList.remove('hidden');
+        }
+
+        setupVoteScreen(globalMeetingTitle, globalLocation, globalDesc, globalSlots);
+        listenToLiveVotes();
+        window.history.pushState(null, null, `#/poll/${activePollId}`);
+        switchScreen('share');
+
+    } catch (e) {
+        console.error("Firebase Kayıt Hatası:", e);
+        const RULES = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}";
+        let msg;
+        if (e.message === 'TIMEOUT') {
+            msg = "⏱️ BAĞLANTI ZAMAN AŞIMI (12 saniye)\n\n"
+                + "Firebase yanıt vermedi. Güvenlik kuralları yazma iznini engelliyor olabilir.\n\n"
+                + "Firebase Console'da şu adımları izle:\n"
+                + "1. console.firebase.google.com → slotify-33d2c\n"
+                + "2. Firestore Database → Rules sekmesi\n"
+                + "3. Şu kuralı yapıştır → Publish:\n\n" + RULES;
+        } else if (e.code === 'permission-denied' || String(e.message).toLowerCase().includes('permission')) {
+            msg = "🔒 FİREBASE İZİN HATASI\n\n"
+                + "1. console.firebase.google.com → slotify-33d2c\n"
+                + "2. Firestore Database → Rules\n"
+                + "3. Yapıştır → Publish:\n\n" + RULES;
+        } else {
+            msg = "❌ Hata: " + (e.message || String(e));
+        }
+        alert(msg);
+    } finally {
+        // Timeout da dahil HER koşulda butonu geri aç
+        btnCreatePoll.innerHTML = originalBtnText;
+        btnCreatePoll.disabled  = false;
+    }
+});
+
+// ── Admin actions ──────────────────────────────────────────────────────
+btnAdminEdit.addEventListener('click', () => {
+    if (confirm("Anketi düzenlemek istiyor musunuz? Mevcut oylar korunacaktır.")) {
+        tempSlots = globalSlots.map(s => typeof s === 'string' ? JSON.parse(s) : {...s});
+        switchScreen('create');
+        renderWeekHeader(); updateWeekRangeLabel(); initCalendarGrid();
+        buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
+        btnCreatePoll.innerHTML = "Anketi Güncelle ✏️";
+    }
+});
+
+btnAdminDelete.addEventListener('click', async () => {
+    if (confirm("Bu anketi tamamen silmek istediğinize emin misiniz? Tüm oylama verileri yok olacaktır.")) {
+        try {
+            await deleteDoc(doc(db, "polls", activePollId));
+            alert("Anket başarıyla silindi.");
+            window.location.hash = '';
+            inputTitle.value = ''; inputLocation.value = ''; inputDesc.value = ''; tempSlots = [];
+            initCalendarGrid(); buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
+            switchScreen('create');
+        } catch (e) {
+            console.error("Silme hatası:", e);
+            alert("Silinirken bir hata oluştu: " + e.message);
+        }
+    }
+});
+
+// ── Vote screen setup ──────────────────────────────────────────────────
+function setupVoteScreen(title, locationName, desc, slots) {
+    voteTitle.textContent = title;
+    voteDetails.innerHTML = `
+        ${locationName && locationName !== "Belirtilmedi" ? '<span class="bg-gray-100 px-2 py-1 rounded border border-gray-200 mr-2">📍 ' + locationName + '</span>' : ''}
+        ${desc && desc !== "Açıklama girilmedi." ? '<span class="text-gray-600">📝 ' + desc + '</span>' : ''}
+    `;
+
+    const grid = document.getElementById('slot-availability-grid');
+    grid.innerHTML = '';
+    const allDayDates = new Set();
+    slots.forEach(si => { const s = typeof si === 'string' ? JSON.parse(si) : si; if (s.duration === "allday") allDayDates.add(s.dateKey); });
+
+    slots.forEach(si => {
+        const s = typeof si === 'string' ? JSON.parse(si) : si;
+        if (s.duration !== "allday" && allDayDates.has(s.dateKey)) return;
+        const key = `${s.dateKey}_${s.hourKey}`;
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200';
+        row.innerHTML = `
+            <span class="text-xs font-mono text-gray-700 flex-grow">${s.display}</span>
+            <button class="slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300"
+                    data-key="${key}" data-available="false">— Uygun değilim</button>
+        `;
+        grid.appendChild(row);
+    });
+
+    grid.querySelectorAll('.slot-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const isAvailable = btn.getAttribute('data-available') === 'true';
+            btn.setAttribute('data-available', String(!isAvailable));
+            if (!isAvailable) {
+                btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-teal-500 text-white';
+                btn.textContent = '✅ Uygunum';
+            } else {
+                btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300';
+                btn.textContent = '— Uygun değilim';
+            }
+        });
+    });
+}
+
+function loadVoterSelections(voterName) {
+    const voterData = globalVotesData.find(v => v.voterName === voterName);
+    if (!voterData || !voterData.availability) return;
+    document.querySelectorAll('.slot-toggle-btn').forEach(btn => {
+        const key = btn.getAttribute('data-key');
+        const available = voterData.availability[key] === true;
+        btn.setAttribute('data-available', String(available));
+        if (available) {
+            btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-teal-500 text-white';
+            btn.textContent = '✅ Uygunum';
+        } else {
+            btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300';
+            btn.textContent = '— Uygun değilim';
+        }
+    });
+}
+
+// ── Share & copy handlers ──────────────────────────────────────────────
+btnDoodleCopy.addEventListener('click', () => {
+    doodleShareUrl.select();
+    navigator.clipboard.writeText(doodleShareUrl.value).catch(() => {});
+    btnDoodleCopy.textContent = "Kopyalandı! ✓";
+    btnDoodleCopy.classList.replace('bg-teal-600', 'bg-emerald-600');
+    setTimeout(() => {
+        btnDoodleCopy.textContent = "Linki Kopyala";
+        btnDoodleCopy.classList.replace('bg-emerald-600', 'bg-teal-600');
+    }, 2000);
+});
+
+btnShareWaDirect.addEventListener('click', () => {
+    const txt = `⚡ *SLOTIFY TOPLANTI ANKETİ* ⚡\n\n📢 *Konu:* ${globalMeetingTitle}\n📍 *Konum:* ${globalLocation}\n👇 Süre opsiyonlarını inceleyip oyunu ver:\n🔗 ${doodleShareUrl.value}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
+});
+
+document.getElementById('btn-mailto').addEventListener('click', () => {
+    const link   = doodleShareUrl.value;
+    const konu   = encodeURIComponent(`Toplantı Zamanı Oylaması: ${globalMeetingTitle}`);
+    const slotListesi = globalSlots.map(si => {
+        const s = typeof si === 'string' ? JSON.parse(si) : si;
+        return `  • ${s.display}`;
+    }).join('\n');
+    const govde = encodeURIComponent(
+        `Merhaba,\n\n` +
+        `"${globalMeetingTitle}" toplantısı için uygun zamanınızı seçmenizi rica ediyorum.\n\n` +
+        `📍 Konum: ${globalLocation || 'Belirtilmedi'}\n\n` +
+        `Önerilen zaman seçenekleri:\n${slotListesi}\n\n` +
+        `Aşağıdaki bağlantıya tıklayarak uygun olduğunuz saatleri işaretleyebilirsiniz:\n` +
+        `${link}\n\n` +
+        `Teşekkürler.`
+    );
+    window.location.href = `mailto:?subject=${konu}&body=${govde}`;
+});
+
+btnGoToVote.addEventListener('click',   () => switchScreen('vote'));
+btnBackToShare.addEventListener('click',() => switchScreen('share'));
+
+// ── Vote submission ────────────────────────────────────────────────────
+inputVoterName.addEventListener('blur', () => {
+    const name = inputVoterName.value.trim();
+    if (name) loadVoterSelections(name);
+});
+
+btnSubmitVote.addEventListener('click', async () => {
+    try {
+        const name = inputVoterName.value.trim();
+        if (!name)         return alert('Lütfen adınızı yazın.');
+        if (!activePollId) return alert('Hata: Anket referansı bulunamadı.');
+
+        const availability = {};
+        let enAzBirUygun = false;
+        document.querySelectorAll('.slot-toggle-btn').forEach(btn => {
+            const key = btn.getAttribute('data-key');
+            const available = btn.getAttribute('data-available') === 'true';
+            availability[key] = available;
+            if (available) enAzBirUygun = true;
+        });
+        if (!enAzBirUygun) return alert('En az bir saat için "✅ Uygunum" seçmelisiniz!');
+
+        btnSubmitVote.innerHTML = "Kaydediliyor... ⏳";
+        btnSubmitVote.disabled  = true;
+
+        const voteData = { voterName: name, availability, votedAt: serverTimestamp() };
+        const existingQ = query(collection(db, "polls", activePollId, "votes"), where("voterName", "==", name));
+        const existingSnap = await getDocs(existingQ);
+        if (!existingSnap.empty) {
+            await updateDoc(existingSnap.docs[0].ref, voteData);
+            alert("Seçimleriniz güncellendi! ✅");
+        } else {
+            await addDoc(collection(db, "polls", activePollId, "votes"), voteData);
+            alert("Seçimleriniz kaydedildi! 🎉");
+        }
+
+    } catch (e) {
+        console.error("Oy gönderme hatası:", e);
+        alert("Veritabanı Hatası: " + e.message);
+    } finally {
+        btnSubmitVote.innerHTML = "Seçimlerimi Kaydet ⚡";
+        btnSubmitVote.disabled  = false;
+    }
+});
+
+// ── Stats calculation — Doodle mantığı ────────────────────────────────
+function calculateStats() {
+    slotStatsContainer.innerHTML = '';
+    const totalVoters = globalVotesData.length;
+    if (totalVoters === 0) {
+        slotStatsContainer.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4">Henüz kimse oy vermedi.</p>';
+        updateVotersList();
+        return;
+    }
+
+    const allDayDates = new Set();
+    globalSlots.forEach(si => { const s = typeof si === 'string' ? JSON.parse(si) : si; if (s.duration === "allday") allDayDates.add(s.dateKey); });
+
+    // Her slot için "uygunum" sayısını hesapla
+    const slotScores = [];
+    globalSlots.forEach(si => {
+        const slotObj = typeof si === 'string' ? JSON.parse(si) : si;
+        if (slotObj.duration !== "allday" && allDayDates.has(slotObj.dateKey)) return;
+        const key = `${slotObj.dateKey}_${slotObj.hourKey}`;
+
+        const uygunlar = globalVotesData.filter(v => {
+            if (v.availability) return v.availability[key] === true;
+            return false;
+        }).map(v => v.voterName);
+
+        slotScores.push({ slotObj, key, uygunlar, count: uygunlar.length });
+    });
+
+    // En yüksek skoru bul
+    const maxScore = Math.max(...slotScores.map(s => s.count));
+
+    // Sırala: en çok uygun → en az
+    slotScores.sort((a, b) => b.count - a.count);
+
+    slotScores.forEach(({ slotObj, uygunlar, count }) => {
+        const yuzde  = Math.round(count / totalVoters * 100);
+        const isWinner = count === maxScore && count === totalVoters && totalVoters > 0;
+        const isTop    = count === maxScore && count > 0;
+
+        const statRow = document.createElement('div');
+        statRow.className = `p-3 rounded-xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all
+            ${isWinner ? 'bg-teal-50 border-teal-400 ring-2 ring-teal-400' : isTop ? 'bg-white border-teal-200' : 'bg-white border-gray-200'}`;
+        statRow.innerHTML = `
+            <div class="flex-grow">
+                <div class="flex justify-between text-xs mb-1 items-center">
+                    <span class="font-bold text-gray-900">${isWinner ? '🏆 ' : isTop ? '⭐ ' : ''}${slotObj.display}</span>
+                    <span class="${isTop ? 'text-teal-600' : 'text-gray-400'} font-mono font-bold text-xs">${count}/${totalVoters} uygun</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200">
+                    <div class="${isWinner ? 'bg-teal-500' : isTop ? 'bg-teal-400' : 'bg-gray-300'} h-2.5 rounded-full transition-all duration-500" style="width:${yuzde}%"></div>
+                </div>
+                <p class="text-[10px] text-gray-500 mt-1">${uygunlar.length > 0 ? '✅ ' + uygunlar.join(', ') : 'Henüz kimse uygun değil'}</p>
+            </div>
+            <button class="btn-cal bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition-colors shrink-0 shadow"
+                data-slot='${JSON.stringify(slotObj)}'>📅 Takvime İşle</button>
+        `;
+        slotStatsContainer.appendChild(statRow);
+    });
+
+    document.querySelectorAll('.btn-cal').forEach(btn => {
+        btn.addEventListener('click', e => {
+            triggerGoogleCalendarLink(globalMeetingTitle, JSON.parse(e.currentTarget.getAttribute('data-slot')));
+        });
+    });
+
+    updateVotersList();
+}
+
+function updateVotersList() {
+    const container = document.getElementById('voters-list');
+    if (!container) return;
+    container.innerHTML = '';
+    if (globalVotesData.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-400 italic">Henüz kimse katılımını bildirmedi.</p>';
+        return;
+    }
+    globalVotesData.forEach(v => {
+        const badge = document.createElement('div');
+        badge.className = 'flex items-center gap-1.5 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-700';
+        const uygunSayisi = v.availability ? Object.values(v.availability).filter(Boolean).length : 0;
+        badge.innerHTML = `👤 ${v.voterName} <span class="text-teal-600 font-mono">(${uygunSayisi} uygun)</span>`;
+        container.appendChild(badge);
+    });
+}
+
+function triggerGoogleCalendarLink(title, slotObj) {
+    let startIso = "", endIso = "";
+    try {
+        const start = new Date(slotObj.start);
+        if (slotObj.duration === "allday") {
+            startIso = start.toISOString().replace(/[-:]/g, "").split("T")[0];
+            endIso   = new Date(start.getTime() + 86400000).toISOString().replace(/[-:]/g, "").split("T")[0];
+        } else {
+            const end = new Date(start.getTime() + slotObj.duration * 60000);
+            startIso  = start.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+            endIso    = end.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+        }
+    } catch { startIso = "20260601T120000Z"; endIso = "20260601T130000Z"; }
+    window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startIso}/${endIso}&details=${encodeURIComponent(globalDesc||'')}&location=${encodeURIComponent(globalLocation||'')}&sf=true&output=xml`, '_blank');
+}
+
+// ── Live votes listener ────────────────────────────────────────────────
+function listenToLiveVotes() {
+    if (unsubscribeLiveVotes) unsubscribeLiveVotes();
+    const q = query(collection(db, "polls", activePollId, "votes"), orderBy("votedAt", "desc"));
+    unsubscribeLiveVotes = onSnapshot(q, snapshot => {
+        globalVotesData = [];
+        snapshot.forEach(docSnap => { globalVotesData.push(docSnap.data()); });
+        calculateStats();
+    });
+}
+
+// ── Load poll from URL hash ────────────────────────────────────────────
+async function loadPollDirectly(pollId) {
+    activePollId = pollId;
+    try {
+        const docSnap = await getDoc(doc(db, "polls", pollId));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            globalMeetingTitle = data.title;
+            globalLocation     = data.location || "Belirtilmedi";
+            globalDesc         = data.desc || "";
+            globalSlots        = data.slots;
+
+            inputTitle.value    = globalMeetingTitle;
+            inputLocation.value = data.location || "";
+            inputDesc.value     = globalDesc;
+
+            sharePreviewTitle.textContent      = globalMeetingTitle;
+            sharePreviewDesc.textContent       = globalDesc || "Açıklama girmediniz.";
+            sharePreviewLoc.textContent        = globalLocation;
+            sharePreviewSlotsCount.textContent = `${globalSlots.length} Farklı Alternatif`;
+            doodleShareUrl.value               = `${window.location.href.split('#')[0]}#/poll/${pollId}`;
+
+            setupVoteScreen(data.title, globalLocation, globalDesc, data.slots);
+            switchScreen('vote');
+            listenToLiveVotes();
+        } else {
+            window.location.hash = ''; switchScreen('create');
+        }
+    } catch (err) {
+        console.error("Poll yükleme hatası:", err);
+        window.location.hash = ''; switchScreen('create');
+    }
+}
+
+// ── Screen switcher ────────────────────────────────────────────────────
+function switchScreen(target) {
+    screenCreate.classList.add('hidden');
+    screenShare.classList.add('hidden');
+    screenVote.classList.add('hidden');
+    if (target === 'create') screenCreate.classList.remove('hidden');
+    if (target === 'share')  screenShare.classList.remove('hidden');
+    if (target === 'vote')   screenVote.classList.remove('hidden');
+}
+
+// ── Hash routing ───────────────────────────────────────────────────────
+window.addEventListener('hashchange', () => {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#/poll/')) {
+        const newId = hash.replace('#/poll/', '');
+        if (activePollId !== newId) loadPollDirectly(newId);
+    } else { switchScreen('create'); }
+});
+
+// ── Bootstrap ─────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    renderWeekHeader();
+    updateWeekRangeLabel();
+    initCalendarGrid();
+    buildMiniMonthCalendar();
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#/poll/')) loadPollDirectly(hash.replace('#/poll/', ''));
+});
+
+document.getElementById('logo').addEventListener('click', () => { 
+    activePollId = null;
+    tempSlots = [];
+    btnCreatePoll.innerHTML = "Anket Linkini Uçur 🚀";
+    window.location.hash = ''; location.reload(); 
+});
+</script>
+</body>
+</html>
