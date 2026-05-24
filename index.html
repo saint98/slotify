@@ -529,7 +529,7 @@ function loadVoterSelections(voterName){
 }
 
 btnDoodleCopy.addEventListener('click',()=>{doodleShareUrl.select();navigator.clipboard.writeText(doodleShareUrl.value).catch(()=>{});btnDoodleCopy.textContent="Copied! &#10003;";btnDoodleCopy.classList.replace('bg-teal-600','bg-emerald-600');setTimeout(()=>{btnDoodleCopy.textContent="Copy link";btnDoodleCopy.classList.replace('bg-emerald-600','bg-teal-600');},2000);});
-btnShareWaDirect.addEventListener('click',()=>{const txt='⚡ *SLOTIFY MEETING POLL*\n\nTitle: '+globalMeetingTitle+'\nLocation: '+globalLocation+'\nMark your availability:\n'+doodleShareUrl.value;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank');});
+btnShareWaDirect.addEventListener('click',()=>{const txt='SLOTIFY MEETING POLL\n\nTitle: '+globalMeetingTitle+'\nLocation: '+globalLocation+'\nMark your availability:\n'+doodleShareUrl.value;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank');});
 document.getElementById('btn-mailto').addEventListener('click',()=>{
     const link=doodleShareUrl.value;
     const slots2=globalSlots.map(si=>{const s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join('\n');
