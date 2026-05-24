@@ -419,7 +419,7 @@ function renderWeekHeader() {
     daysData.forEach(day => {
         const isWeekend = day.date.getDay() === 6 || day.date.getDay() === 0;
         const isToday   = day.dateStr === todayStr;
-        const dateDisplay = day.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        const dateDisplay = day.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
 
         const col = document.createElement('div');
         col.className = `text-center py-1 ${isToday ? 'today-col-header' : ''}`;
@@ -434,8 +434,8 @@ function renderWeekHeader() {
 
 function updateWeekRangeLabel() {
     const fmt = { day: 'numeric', month: 'long' };
-    const start = daysData[0].date.toLocaleDateString('en-GB', fmt);
-    const end   = daysData[6].date.toLocaleDateString('en-GB', { ...fmt, year: 'numeric' });
+    const start = daysData[0].date.toLocaleDateString('tr-TR', fmt);
+    const end   = daysData[6].date.toLocaleDateString('tr-TR', { ...fmt, year: 'numeric' });
     weekRangeLabel.textContent = `${start} – ${end}`;
 }
 
@@ -557,8 +557,8 @@ function handleHourClick(dateStr, hourStr) {
     const startObj = new Date(`${dateStr}T${hourStr}:00`);
     const endObj   = new Date(startObj.getTime() + selectedDuration * 60000);
     const fmt      = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-    const startDisplay = startObj.toLocaleString('en-GB', fmt);
-    const endHourStr   = endObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const startDisplay = startObj.toLocaleString('tr-TR', fmt);
+    const endHourStr   = endObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
     const existing = tempSlots.findIndex(s => s.dateKey === dateStr && s.hourKey === hourStr);
     if (existing > -1) { tempSlots.splice(existing, 1); }
@@ -579,7 +579,7 @@ function buildMiniMonthCalendar() {
     const { year, month } = currentMonthState;
 
     // Label (e.g. "Mayıs 2026")
-    const raw = new Date(year, month, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    const raw = new Date(year, month, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
     document.getElementById('month-label').textContent = raw.charAt(0).toUpperCase() + raw.slice(1);
 
     const firstDow    = new Date(year, month, 1).getDay(); // 0=Sun
@@ -636,7 +636,7 @@ function renderMonthDaysUi() {
         const localDate = new Date(y, m - 1, d);
         const headerRow = document.createElement('div');
         headerRow.className = "flex justify-between items-center border-b border-gray-100 pb-2";
-        headerRow.innerHTML = `<span class="text-xs font-black text-blue-600 uppercase tracking-wider">${localDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>`;
+        headerRow.innerHTML = `<span class="text-xs font-black text-blue-600 uppercase tracking-wider">${localDate.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>`;
 
         const btnRemoveGroup = document.createElement('button');
         btnRemoveGroup.className = "text-gray-400 hover:text-red-500 text-xs font-bold";
@@ -724,7 +724,7 @@ function updateMonthSlotData(slotRef, type, value) {
         const endObj   = new Date(startObj.getTime() + slotRef.duration * 60000);
         slotRef.start  = startObj.toISOString();
         const fmt      = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-        slotRef.display = `📅 ${startObj.toLocaleString('en-GB', fmt)} - ${endObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} (${slotRef.duration} min)`;
+        slotRef.display = `📅 ${startObj.toLocaleString('tr-TR', fmt)} - ${endObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} (${slotRef.duration} min)`;
     }
     renderMonthDaysUi(); renderTempSlots();
 }
