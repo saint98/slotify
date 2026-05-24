@@ -529,11 +529,12 @@ function loadVoterSelections(voterName){
 }
 
 btnDoodleCopy.addEventListener('click',()=>{doodleShareUrl.select();navigator.clipboard.writeText(doodleShareUrl.value).catch(()=>{});btnDoodleCopy.textContent="Copied! &#10003;";btnDoodleCopy.classList.replace('bg-teal-600','bg-emerald-600');setTimeout(()=>{btnDoodleCopy.textContent="Copy link";btnDoodleCopy.classList.replace('bg-emerald-600','bg-teal-600');},2000);});
-btnShareWaDirect.addEventListener('click',()=>{const txt='SLOTIFY MEETING POLL\n\nTitle: '+globalMeetingTitle+'\nLocation: '+globalLocation+'\nMark your availability:\n'+doodleShareUrl.value;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank');});
+btnShareWaDirect.addEventListener('click',()=>{var nl=String.fromCharCode(10);var txt='SLOTIFY MEETING POLL'+nl+nl+'Title: '+globalMeetingTitle+nl+'Location: '+globalLocation+nl+'Mark your availability:'+nl+doodleShareUrl.value;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank');});
 document.getElementById('btn-mailto').addEventListener('click',()=>{
     const link=doodleShareUrl.value;
-    const slots2=globalSlots.map(si=>{const s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join('\n');
-    const bodyText='Hi,\n\nPlease mark your availability for "'+globalMeetingTitle+'".\n\nLocation: '+(globalLocation||'Not specified')+'\n\nProposed times:\n'+slots2+'\n\nClick to respond:\n'+link+'\n\nThank you.';
+    const slots2=globalSlots.map(si=>{const s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join(String.fromCharCode(10));
+    const nl=String.fromCharCode(10);
+    const bodyText='Hi,'+nl+nl+'Please mark your availability for "'+globalMeetingTitle+'".'+nl+nl+'Location: '+(globalLocation||'Not specified')+nl+nl+'Proposed times:'+nl+slots2+nl+nl+'Click to respond:'+nl+link+nl+nl+'Thank you.';
     window.location.href='mailto:?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(bodyText);
 });
 btnGoToVote.addEventListener('click',()=>switchScreen('vote'));
