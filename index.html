@@ -144,7 +144,7 @@
                     <!-- All-day row -->
                     <div class="grid grid-cols-8 gap-1 text-center py-2 border-b-2 border-gray-200 bg-gray-50/50 min-w-[650px]" id="all-day-row"></div>
                     <!-- Hour rows -->
-                    <div id="calendar-grid-body" class="divide-y divide-gray-100 min-w-[650px] mt-1"></div>
+                    <div id="calendar-grid-body" class="min-w-[650px]"></div>
                 </div>
             </div>
         </div>
@@ -503,7 +503,8 @@ function initCalendarGrid() {
     daysData.forEach(day => {
         const dayCell = document.createElement('div');
         dayCell.setAttribute('data-allday-date', day.dateStr);
-        dayCell.className = "border border-dashed border-gray-300 rounded-lg p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer hover:bg-blue-50/50 transition-colors";
+        dayCell.className = "p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors";
+        dayCell.style.cssText = "background:#f3f4f6; border:1px dashed #d1d5db; border-radius:4px;";
         dayCell.innerHTML = `<span>+ Tüm Gün</span>`;
         dayCell.addEventListener('click', () => handleAllDayClick(day.dateStr));
         allDayRow.appendChild(dayCell);
@@ -514,14 +515,16 @@ function initCalendarGrid() {
     for (let hour = 8; hour <= 20; hour++) {
         const hourStr = hour < 10 ? `0${hour}:00` : `${hour}:00`;
         const row = document.createElement('div');
-        row.className = "grid grid-cols-8 gap-1 py-1.5 items-center text-center";
-        row.innerHTML = `<div class="text-left text-xs font-mono text-gray-400 font-bold pl-1">${hourStr}</div>`;
+        row.className = "grid grid-cols-8 gap-1 items-center text-center";
+        row.style.cssText = "border-top:1px solid #e5e7eb; padding: 2px 0;";
+        row.innerHTML = `<div class="text-left text-xs font-mono text-gray-400 pl-1" style="font-size:11px;">${hourStr}</div>`;
         daysData.forEach(day => {
             const cell = document.createElement('div');
             cell.setAttribute('data-date', day.dateStr);
             cell.setAttribute('data-hour', hourStr);
-            cell.className = "calendar-grid-cell bg-white border border-gray-200 rounded-lg h-10 flex items-center justify-center text-gray-300 font-bold cursor-pointer select-none text-xs shadow-sm";
-            cell.innerHTML = `<span>+</span>`;
+            cell.className = "calendar-grid-cell h-10 flex items-center justify-center text-gray-400 font-bold cursor-pointer select-none text-xs";
+            cell.style.cssText = "background:#f3f4f6; border:none; border-top:1px solid #ffffff; border-radius:4px;";
+            cell.innerHTML = `<span class="opacity-0 group-hover:opacity-100">+</span>`;
             cell.addEventListener('click', () => {
                 if (selectedDuration === "allday") handleAllDayClick(day.dateStr);
                 else handleHourClick(day.dateStr, hourStr);
@@ -729,14 +732,14 @@ function updateMonthSlotData(slotRef, type, value) {
 // ── Sync grid UI with tempSlots ────────────────────────────────────────
 function syncGridUiWithSlots() {
     document.querySelectorAll('.calendar-grid-cell').forEach(cell => {
-        cell.className = "calendar-grid-cell bg-white border border-gray-200 rounded-lg h-10 flex items-center justify-center text-gray-300 font-bold cursor-pointer select-none text-xs shadow-sm";
-        cell.innerHTML = `<span>+</span>`;
+        cell.className = "calendar-grid-cell h-10 flex items-center justify-center text-gray-400 font-bold cursor-pointer select-none text-xs";
+        cell.style.cssText = "background:#f3f4f6; border:none; border-top:1px solid #ffffff; border-radius:4px;";
+        cell.innerHTML = '';
     });
     daysData.forEach(day => {
         const adCell = document.querySelector(`[data-allday-date="${day.dateStr}"]`);
         if (adCell) {
-            adCell.className = "border border-dashed border-gray-300 rounded-lg p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer hover:bg-blue-50/50 transition-colors";
-            adCell.innerHTML = `<span>+ Tüm Gün</span>`;
+            adCell.className = "p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors"; adCell.style.cssText = "background:#f3f4f6;border:1px dashed #d1d5db;border-radius:4px;"; adCell.innerHTML = `<span>+ Tüm Gün</span>`;
         }
     });
     tempSlots.forEach(slot => {
@@ -765,9 +768,9 @@ function syncGridUiWithSlots() {
                 const hasCovers = coveredHours.length > 0;
 
                 // Ana blok — alt satır varsa sadece üst köşeleri yuvarlat
-                activeCell.className = `calendar-grid-cell bg-teal-500 text-white selected-cell flex items-start justify-between font-bold cursor-pointer select-none text-xs shadow-md slot-h-${slot.duration} overflow-hidden`;
-                const borderBottom = hasCovers ? 'none' : '1px solid rgb(15,118,110)';
-                activeCell.style.cssText = 'border: 1px solid rgb(15,118,110); border-bottom:' + borderBottom + '; border-radius:' + (hasCovers ? '10px 10px 0 0' : '10px') + '; position: relative; z-index: 21;';
+                activeCell.className = `calendar-grid-cell text-white selected-cell flex items-start justify-between font-bold cursor-pointer select-none text-xs overflow-hidden slot-h-${slot.duration}`;
+                const borderBottom = hasCovers ? 'none' : '1px solid #1a7f37';
+                activeCell.style.cssText = 'background:#2da44e; border:1px solid #1a7f37; border-bottom:' + borderBottom + '; border-radius:' + (hasCovers ? '6px 6px 0 0' : '6px') + '; position:relative; z-index:21;';
                 activeCell.innerHTML = `
                     <div class="flex flex-col justify-start h-full w-full p-1.5 leading-tight">
                         <span class="font-black text-[11px] text-white">${slot.hourKey} – ${endStr}</span>
@@ -784,9 +787,8 @@ function syncGridUiWithSlots() {
                     if (coveredCell) {
                         coveredCell.className = 'calendar-grid-cell select-none';
                         coveredCell.innerHTML = '';
-                        const radius = isLast ? '0 0 10px 10px' : '0';
-                        // margin-top: -20px → ana bloğun arkasına 20px gömülür, gap tamamen kapanır
-                        coveredCell.style.cssText = 'background:rgb(20,184,166);border:1px solid rgb(15,118,110);border-top:none;border-radius:' + radius + ';height:60px;margin-top:-20px;position:relative;z-index:19;pointer-events:none;cursor:default;';
+                        const radius = isLast ? '0 0 6px 6px' : '0';
+                        coveredCell.style.cssText = 'background:rgb(20,184,166);border:1px solid #1a7f37;border-top:none;border-radius:' + radius + ';height:60px;margin-top:-20px;position:relative;z-index:19;pointer-events:none;cursor:default;';
                     }
                 });
             }
