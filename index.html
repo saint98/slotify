@@ -170,6 +170,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <button id="btn-share-wa-direct" class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 font-bold p-3 rounded-xl text-xs transition-colors">&#128172; Share via WhatsApp</button>
                 <button id="btn-mailto" class="flex items-center justify-center gap-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold p-3 rounded-xl text-xs transition-colors">&#9993;&#65039; Send email invite</button>
+                <button id="btn-mailto-self" class="flex items-center justify-center gap-2 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 font-bold p-3 rounded-xl text-xs transition-colors">&#128947;&#65039; Send link to myself</button>
             </div>
         </div>
         <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -542,6 +543,11 @@ document.getElementById('btn-mailto').addEventListener('click',()=>{
     const nl=String.fromCharCode(10);
     const bodyText='Hi,'+nl+nl+'Please mark your availability for "'+globalMeetingTitle+'".'+nl+nl+'Location: '+(globalLocation||'Not specified')+nl+nl+'Proposed times:'+nl+slots2+nl+nl+'Click to respond:'+nl+link+nl+nl+'Thank you.';
     window.location.href='mailto:?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(bodyText);
+});
+document.getElementById('btn-mailto-self').addEventListener('click',()=>{
+    var subject=encodeURIComponent('My Slotify poll: '+globalMeetingTitle);
+    var body=encodeURIComponent('Poll link (keep this safe):\n\n'+doodleShareUrl.value+'\n\nTitle: '+globalMeetingTitle+'\nLocation: '+(globalLocation||'Not specified')+'\nSlots: '+globalSlots.length+' options');
+    window.location.href='mailto:?subject='+subject+'&body='+body;
 });
 btnGoToVote.addEventListener('click',()=>switchScreen('vote'));
 btnBackToShare.addEventListener('click',()=>{ if(activePollId){if(!doodleShareUrl.value){const baseUrl=window.location.href.split('#')[0];doodleShareUrl.value=baseUrl+'#/poll/'+activePollId;}switchScreen('share');}else{switchScreen('create');}});
