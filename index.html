@@ -586,22 +586,43 @@ function calculateStats(){
     });
     const maxScore=Math.max(...scores.map(s=>s.count));
     scores.sort((a,b)=>b.count-a.count);
-    scores.forEach(({slotObj,avail,count})=>{
-        const pct=Math.round(count/total*100);
-        const isWinner=count===maxScore&&count===total&&total>0;
-        const isTop=count===maxScore&&count>0;
-        const row=document.createElement('div');
-        row.className='p-3 rounded-xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 '+(isWinner?'bg-teal-50 border-teal-400 ring-2 ring-teal-400':isTop?'bg-white border-teal-200':'bg-white border-gray-200');
-        var slotJson=JSON.stringify(slotObj).split("'").join('&apos;');
+    scores.forEach(function(item){
+        var slotObj=item.slotObj,avail=item.avail,count=item.count;
+        var pct=Math.round(count/total*100);
+        var isWinner=count===maxScore&&count===total&&total>0;
+        var isTop=count===maxScore&&count>0;
+
+        var row=document.createElement('div');
+        var rowClass='p-3 rounded-xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 ';
+        rowClass+=isWinner?'bg-teal-50 border-teal-400 ring-2 ring-teal-400':isTop?'bg-white border-teal-200':'bg-white border-gray-200';
+        row.className=rowClass;
+
         var winIcon=isWinner?'&#127942; ':isTop?'&#11088; ':'';
         var barColor=isWinner?'bg-teal-500':isTop?'bg-teal-400':'bg-gray-300';
         var lblColor=isTop?'text-teal-600':'text-gray-400';
         var availTxt=avail.length>0?'&#10003; '+avail.join(', '):'No one available yet';
-        row.innerHTML='<div class="flex-grow"><div class="flex justify-between text-xs mb-1 items-center"><span class="font-bold text-gray-900">'+winIcon+slotObj.display+'</span><span class="'+lblColor+' font-mono font-bold text-xs">'+count+'/'+total+' available</span></div><div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200"><div class="'+barColor+' h-2.5 rounded-full transition-all duration-500" style="width:'+pct+'%"></div></div><p class="text-[10px] text-gray-500 mt-1">'+availTxt+'</p></div><button class="btn-cal bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition-colors shrink-0 shadow" data-slot=''+slotJson+''>&#128197; Add to calendar</button>';
 
+        var inner=document.createElement('div');
+        inner.className='flex-grow';
+        inner.innerHTML='<div class="flex justify-between text-xs mb-1 items-center">'
+            +'<span class="font-bold text-gray-900">'+winIcon+slotObj.display+'</span>'
+            +'<span class="'+lblColor+' font-mono font-bold text-xs">'+count+'/'+total+' available</span>'
+            +'</div>'
+            +'<div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200">'
+            +'<div class="'+barColor+' h-2.5 rounded-full transition-all duration-500" style="width:'+pct+'%"></div>'
+            +'</div>'
+            +'<p class="text-[10px] text-gray-500 mt-1">'+availTxt+'</p>';
+
+        var btn=document.createElement('button');
+        btn.className='btn-cal bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition-colors shrink-0 shadow';
+        btn.innerHTML='&#128197; Add to calendar';
+        btn.setAttribute('data-slot', JSON.stringify(slotObj));
+
+        row.appendChild(inner);
+        row.appendChild(btn);
         slotStatsContainer.appendChild(row);
     });
-    document.querySelectorAll('.btn-cal').forEach(btn=>{btn.addEventListener('click',e=>{const s=JSON.parse(e.currentTarget.getAttribute('data-slot'));const st=new Date(s.start);let si,ei;if(s.duration==="allday"){si=st.toISOString().replace(/[-:]/g,"").split("T")[0];ei=new Date(st.getTime()+86400000).toISOString().replace(/[-:]/g,"").split("T")[0];}else{const en=new Date(st.getTime()+s.duration*60000);si=st.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";ei=en.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";}window.open('https://www.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(globalMeetingTitle)+'&dates='+si+'/'+ei+'&details='+encodeURIComponent(globalDesc||'')+'&location='+encodeURIComponent(globalLocation||'')+'&sf=true&output=xml','_blank');});});
+        document.querySelectorAll('.btn-cal').forEach(btn=>{btn.addEventListener('click',e=>{const s=JSON.parse(e.currentTarget.getAttribute('data-slot'));const st=new Date(s.start);let si,ei;if(s.duration==="allday"){si=st.toISOString().replace(/[-:]/g,"").split("T")[0];ei=new Date(st.getTime()+86400000).toISOString().replace(/[-:]/g,"").split("T")[0];}else{const en=new Date(st.getTime()+s.duration*60000);si=st.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";ei=en.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";}window.open('https://www.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(globalMeetingTitle)+'&dates='+si+'/'+ei+'&details='+encodeURIComponent(globalDesc||'')+'&location='+encodeURIComponent(globalLocation||'')+'&sf=true&output=xml','_blank');});});
     updateVotersList();
 }
 
