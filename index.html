@@ -301,7 +301,7 @@ function renderWeekHeader() {
 
 function updateWeekRangeLabel() {
     const fmt={day:'numeric',month:'long'};
-    weekRangeLabel.textContent=daysData[0].date.toLocaleDateString('en-GB',fmt)+' – '+daysData[6].date.toLocaleDateString('en-GB',{...fmt,year:'numeric'});
+    weekRangeLabel.textContent=daysData[0].date.toLocaleDateString('en-GB',fmt)+' - '+daysData[6].date.toLocaleDateString('en-GB',{...fmt,year:'numeric'});
 }
 
 document.getElementById('btn-prev-week').addEventListener('click',()=>{ currentWeekOffset--; daysData=getWeekDays(currentWeekOffset); renderWeekHeader(); updateWeekRangeLabel(); initCalendarGrid(); });
@@ -446,7 +446,7 @@ function syncGridUiWithSlots() {
                 ac.className='calendar-grid-cell text-white selected-cell flex items-start justify-between font-bold cursor-pointer select-none text-xs overflow-hidden slot-h-'+slot.duration;
                 const bb=hasCov?'none':'1px solid #1a7f37';
                 ac.style.cssText='background:#2da44e;border:1px solid #1a7f37;border-bottom:'+bb+';border-radius:'+(hasCov?'6px 6px 0 0':'6px')+';position:relative;z-index:21;';
-                ac.innerHTML='<div class="flex flex-col justify-start h-full w-full p-1.5 leading-tight"><span class="font-black text-[11px] text-white">'+slot.hourKey+' – '+endStr+'</span><span class="text-[9px] text-teal-100 font-normal mt-0.5">'+slot.duration+' min</span></div><div class="text-white text-[11px] font-black p-1 opacity-70 hover:opacity-100 shrink-0">&#10005;</div>';
+                ac.innerHTML='<div class="flex flex-col justify-start h-full w-full p-1.5 leading-tight"><span class="font-black text-[11px] text-white">'+slot.hourKey+' - '+endStr+'</span><span class="text-[9px] text-teal-100 font-normal mt-0.5">'+slot.duration+' min</span></div><div class="text-white text-[11px] font-black p-1 opacity-70 hover:opacity-100 shrink-0">&#10005;</div>';
                 coveredHours.forEach((h,idx)=>{
                     const isLast=idx===coveredHours.length-1;
                     const hStr=(h<10?'0'+h:h)+':00';
@@ -529,7 +529,7 @@ function loadVoterSelections(voterName){
 }
 
 btnDoodleCopy.addEventListener('click',()=>{doodleShareUrl.select();navigator.clipboard.writeText(doodleShareUrl.value).catch(()=>{});btnDoodleCopy.textContent="Copied! &#10003;";btnDoodleCopy.classList.replace('bg-teal-600','bg-emerald-600');setTimeout(()=>{btnDoodleCopy.textContent="Copy link";btnDoodleCopy.classList.replace('bg-emerald-600','bg-teal-600');},2000);});
-btnShareWaDirect.addEventListener('click',()=>{const txt='\u26A1 *SLOTIFY MEETING POLL*\n\nTitle: '+globalMeetingTitle+'\nLocation: '+globalLocation+'\nMark your availability:\n'+doodleShareUrl.value;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank');});
+btnShareWaDirect.addEventListener('click',()=>{const txt='⚡ *SLOTIFY MEETING POLL*\n\nTitle: '+globalMeetingTitle+'\nLocation: '+globalLocation+'\nMark your availability:\n'+doodleShareUrl.value;window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank');});
 document.getElementById('btn-mailto').addEventListener('click',()=>{
     const link=doodleShareUrl.value;
     const slots2=globalSlots.map(si=>{const s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join('\n');
