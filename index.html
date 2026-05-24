@@ -1,1272 +1,637 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slotify - Doodle Engine v6.5</title>
+    <title>Slotify - Meeting Scheduler</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity:0;transform:translateY(10px); } to { opacity:1;transform:translateY(0); } }
         .calendar-grid-cell { transition: all 0.15s ease; position: relative; }
-        .calendar-grid-cell:hover:not(.selected-cell):not(.blocked-cell) { background-color: rgba(13, 148, 136, 0.08); }
-
-        .active-duration {
-            background-color: #115e59 !important;
-            color: #ffffff !important;
-            border-color: #115e59 !important;
-        }
-        .view-tab-btn {
-            padding: 8px 16px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #4b5563;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .view-tab-btn.active {
-            background-color: #ffffff;
-            color: #111827;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-        }
-        .mini-month-day {
-            width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 600;
-            border-radius: 50%; cursor: pointer;
-            transition: all 0.15s; user-select: none;
-        }
-        .mini-month-day:hover:not(.empty-day) { background-color: #f3f4f6; }
-        .mini-month-day.selected { background-color: #2563eb !important; color: #ffffff !important; }
-        .mini-month-day.empty-day { cursor: default; color: #cbd5e1; }
-        .mini-month-day.today-ring { box-shadow: 0 0 0 2px #0d9488; }
-
-        .slot-h-15  { height: 22px  !important; margin-bottom: -18px; z-index: 20; }
-        .slot-h-30  { height: 44px  !important; z-index: 20; }
-        .slot-h-60  { height: 88px  !important; z-index: 21; }
-        .slot-h-90  { height: 132px !important; z-index: 22; }
-        .slot-h-120 { height: 176px !important; z-index: 23; }
-
-        .allday-badge {
-            background-color: #2563eb !important; color: white !important;
-            border: 1px solid #1d4ed8 !important; border-radius: 6px;
-            font-size: 10px; font-weight: 800; padding: 4px 2px;
-            text-align: center; cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .blocked-cell {
-            background-color: #f3f4f6 !important; opacity: 0.45;
-            cursor: not-allowed !important; pointer-events: none;
-        }
-        .today-col-header { background-color: rgba(13,148,136,0.07); border-radius: 8px; }
+        .calendar-grid-cell:hover { background-color: rgba(13,148,136,0.08) !important; }
+        .active-duration { background-color:#115e59!important;color:#fff!important;border-color:#115e59!important; }
+        .view-tab-btn { padding:8px 16px;font-size:13px;font-weight:700;color:#4b5563;border-radius:8px;transition:all 0.2s; }
+        .view-tab-btn.active { background-color:#fff;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+        .mini-month-day { width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;border-radius:50%;cursor:pointer;transition:all 0.15s;user-select:none; }
+        .mini-month-day:hover:not(.empty-day) { background-color:#f3f4f6; }
+        .mini-month-day.selected { background-color:#2563eb!important;color:#fff!important; }
+        .mini-month-day.empty-day { cursor:default;color:#cbd5e1; }
+        .mini-month-day.today-ring { box-shadow:0 0 0 2px #0d9488; }
+        .slot-h-15  { height:22px!important;margin-bottom:-18px;z-index:20; }
+        .slot-h-30  { height:44px!important;z-index:20; }
+        .slot-h-60  { height:88px!important;z-index:21; }
+        .slot-h-90  { height:132px!important;z-index:22; }
+        .slot-h-120 { height:176px!important;z-index:23; }
+        .allday-badge { background-color:#2563eb!important;color:white!important;border:1px solid #1d4ed8!important;border-radius:6px;font-size:10px;font-weight:800;padding:4px 2px;text-align:center;cursor:pointer; }
+        .blocked-cell { background-color:#f3f4f6!important;opacity:0.45;cursor:not-allowed!important;pointer-events:none; }
+        .today-col-header { background-color:rgba(13,148,136,0.07);border-radius:8px; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col justify-between">
 
 <header class="border-b border-gray-200 bg-white px-6 py-4 flex justify-between items-center shadow-sm">
     <div class="flex items-center space-x-2">
-        <span class="text-2xl font-black tracking-wider text-teal-600 cursor-pointer" id="logo">⚡ SLOTIFY</span>
+        <span class="text-2xl font-black tracking-wider text-teal-600 cursor-pointer" id="logo">&#9889; SLOTIFY</span>
         <span class="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-mono">v6.5</span>
-    </div>
-    <div class="text-xs text-teal-800 bg-teal-50 border border-teal-100 px-3 py-1 rounded-xl font-bold hidden md:block">
-        📅 Dynamic Calendar & Week Navigator Active
     </div>
 </header>
 
 <main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
 
-    <!-- ═══════════════════════ SCREEN: CREATE ═══════════════════════ -->
-    <section id="screen-create" class="fade-in bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-md space-y-6">
-
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-            <div>
-                <h2 class="text-2xl font-black text-gray-950 mb-1">Schedule a new meeting</h2>
-                <p class="text-gray-500 text-sm">Use the Week or Month view to add your available time slots.</p>
-            </div>
-            <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 self-start sm:self-auto">
-                <button id="btn-tab-week" class="view-tab-btn active focus:outline-none">Week</button>
-                <button id="btn-tab-month" class="view-tab-btn focus:outline-none">Month</button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">What's the occasion? *</label>
-                <input type="text" id="meeting-title" placeholder="Örn: Proje Sprint & Tasarım Değerlendirmesi"
-                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location (optional)</label>
-                <input type="text" id="meeting-location" placeholder="e.g. Google Meet, Zoom or Office"
-                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
-            </div>
-        </div>
-
+<!-- CREATE -->
+<section id="screen-create" class="fade-in bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-md space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description (optional)</label>
-            <textarea id="meeting-desc" rows="2" placeholder="Add agenda, instructions or other details..."
-                class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors text-sm"></textarea>
+            <h2 class="text-2xl font-black text-gray-950 mb-1">Schedule a new meeting</h2>
+            <p class="text-gray-500 text-sm">Use the Week or Month view to add your available time slots.</p>
         </div>
+        <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 self-start sm:self-auto">
+            <button id="btn-tab-week" class="view-tab-btn active focus:outline-none">Week</button>
+            <button id="btn-tab-month" class="view-tab-btn focus:outline-none">Month</button>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">What's the occasion? *</label>
+            <input type="text" id="meeting-title" placeholder="e.g. Team sync, Project kickoff"
+                class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location (optional)</label>
+            <input type="text" id="meeting-location" placeholder="e.g. Google Meet, Zoom or Office"
+                class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors">
+        </div>
+    </div>
+    <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description (optional)</label>
+        <textarea id="meeting-desc" rows="2" placeholder="Add agenda, instructions or other details..."
+            class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-gray-950 focus:outline-none focus:border-teal-500 transition-colors text-sm"></textarea>
+    </div>
 
-        <!-- ─── WEEK VIEW ─── -->
-        <div id="panel-view-week" class="space-y-6">
-            <div>
-                <label class="block text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">Select meeting duration</label>
-                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="15">15 min</button>
-                    <button type="button" class="btn-duration active-duration border px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="30">30 min</button>
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="60">60 min</button>
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="90">90 min</button>
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="120">120 min</button>
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-blue-600 border-blue-200 px-3 py-2.5 rounded-xl text-xs font-black transition-all focus:outline-none" data-mins="allday">All day 📅</button>
-                </div>
-            </div>
-
-            <div>
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Weekly calendar</label>
-                    <div class="flex items-center gap-2">
-                        <button id="btn-prev-week"
-                            class="text-xs font-bold text-gray-600 hover:text-teal-700 bg-gray-100 hover:bg-teal-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-all focus:outline-none">
-                            ← Prev
-                        </button>
-                        <span id="week-range-label" class="text-xs font-bold text-gray-700 min-w-[170px] text-center select-none"></span>
-                        <button id="btn-next-week"
-                            class="text-xs font-bold text-gray-600 hover:text-teal-700 bg-gray-100 hover:bg-teal-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-all focus:outline-none">
-                            Next →
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white border border-gray-200 rounded-2xl p-4 overflow-x-auto shadow-sm">
-                    <!-- Header row – filled by JS -->
-                    <div id="week-header-row" class="grid grid-cols-8 gap-1 text-center text-xs font-bold border-b border-gray-200 pb-2 min-w-[650px]"></div>
-                    <!-- All-day row -->
-                    <div class="grid grid-cols-8 gap-1 text-center py-2 border-b-2 border-gray-200 bg-gray-50/50 min-w-[650px]" id="all-day-row"></div>
-                    <!-- Hour rows -->
-                    <div id="calendar-grid-body" class="min-w-[650px]"></div>
-                </div>
+    <!-- WEEK VIEW -->
+    <div id="panel-view-week" class="space-y-6">
+        <div>
+            <label class="block text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">Select meeting duration</label>
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="15">15 min</button>
+                <button type="button" class="btn-duration active-duration border px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="30">30 min</button>
+                <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="60">60 min</button>
+                <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="90">90 min</button>
+                <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="120">120 min</button>
+                <button type="button" class="btn-duration bg-white border border-gray-300 text-blue-600 border-blue-200 px-3 py-2.5 rounded-xl text-xs font-black transition-all focus:outline-none" data-mins="allday">All day</button>
             </div>
         </div>
-
-        <!-- ─── MONTH VIEW ─── -->
-        <div id="panel-view-month" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
-            <div class="lg:col-span-5 border border-gray-200 rounded-2xl p-4 bg-white shadow-sm h-fit">
-                <div class="flex items-center justify-between mb-4 px-1">
-                    <span id="month-label" class="text-sm font-black text-gray-800"></span>
-                    <div class="flex gap-3 text-xs text-gray-500 font-bold">
-                        <button id="btn-prev-month" class="cursor-pointer hover:text-teal-600 transition-colors focus:outline-none px-1">◀</button>
-                        <button id="btn-next-month" class="cursor-pointer hover:text-teal-600 transition-colors focus:outline-none px-1">▶</button>
-                    </div>
+        <div>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Weekly calendar</label>
+                <div class="flex items-center gap-2">
+                    <button id="btn-prev-week" class="text-xs font-bold text-gray-600 hover:text-teal-700 bg-gray-100 hover:bg-teal-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-all focus:outline-none">&#8592; Prev</button>
+                    <span id="week-range-label" class="text-xs font-bold text-gray-700 min-w-[170px] text-center select-none"></span>
+                    <button id="btn-next-week" class="text-xs font-bold text-gray-600 hover:text-teal-700 bg-gray-100 hover:bg-teal-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-all focus:outline-none">Next &#8594;</button>
                 </div>
-                <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-gray-400 uppercase mb-2">
-                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                </div>
-                <div id="mini-month-grid" class="grid grid-cols-7 gap-y-2 justify-items-center"></div>
             </div>
-            <div class="lg:col-span-7 bg-gray-50 border border-gray-200 rounded-2xl p-5 min-h-[320px] flex flex-col justify-between">
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 overflow-x-auto shadow-sm">
+                <div id="week-header-row" class="grid grid-cols-8 gap-1 text-center text-xs font-bold border-b border-gray-200 pb-2 min-w-[650px]"></div>
+                <div class="grid grid-cols-8 gap-1 text-center py-2 border-b-2 border-gray-200 bg-gray-50 min-w-[650px]" id="all-day-row"></div>
+                <div id="calendar-grid-body" class="min-w-[650px]"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONTH VIEW -->
+    <div id="panel-view-month" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+        <div class="lg:col-span-5 border border-gray-200 rounded-2xl p-4 bg-white shadow-sm h-fit">
+            <div class="flex items-center justify-between mb-4 px-1">
+                <span id="month-label" class="text-sm font-black text-gray-800"></span>
+                <div class="flex gap-3 text-xs text-gray-500 font-bold">
+                    <button id="btn-prev-month" class="cursor-pointer hover:text-teal-600 focus:outline-none px-1">&#9664;</button>
+                    <button id="btn-next-month" class="cursor-pointer hover:text-teal-600 focus:outline-none px-1">&#9654;</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-gray-400 uppercase mb-2">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+            <div id="mini-month-grid" class="grid grid-cols-7 gap-y-2 justify-items-center"></div>
+        </div>
+        <div class="lg:col-span-7 bg-gray-50 border border-gray-200 rounded-2xl p-5 min-h-[320px]">
+            <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-4">Daily time slots</h3>
+            <div id="month-days-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-1"></div>
+        </div>
+    </div>
+
+    <div>
+        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selected time slots</h4>
+        <div id="selected-slots-list" class="flex flex-wrap gap-2"></div>
+    </div>
+    <button id="btn-create-poll" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-6 rounded-xl transition-all shadow-md text-base">
+        Create and share &#128640;
+    </button>
+</section>
+
+<!-- SHARE -->
+<section id="screen-share" class="fade-in hidden grid grid-cols-1 md:grid-cols-12 bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-xl min-h-[460px]">
+    <div class="md:col-span-5 bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white flex flex-col justify-between border-r border-gray-100">
+        <div class="space-y-4">
+            <div class="inline-block bg-teal-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider">&#10003; Poll created</div>
+            <h3 id="share-preview-title" class="text-2xl font-black leading-tight text-white tracking-tight">Loading...</h3>
+            <p id="share-preview-desc" class="text-slate-300 text-sm font-normal leading-relaxed"></p>
+        </div>
+        <div class="pt-6 border-t border-slate-700/60 space-y-2.5">
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+                <span>&#128205; Location:</span>
+                <strong id="share-preview-loc" class="text-slate-200">Not specified</strong>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+                <span>&#128197; Options:</span>
+                <strong id="share-preview-slots-count" class="text-slate-200">0 slots proposed</strong>
+            </div>
+        </div>
+    </div>
+    <div class="md:col-span-7 p-6 md:p-8 flex flex-col justify-between bg-white space-y-6">
+        <div class="space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
                 <div>
-                    <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                        <span>📋</span> Daily time slots
-                    </h3>
-                    <div id="month-days-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-1"></div>
+                    <h2 class="text-xl font-black text-gray-950">Invite people</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Share the link so participants can respond.</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="btn-admin-edit" class="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">&#9999;&#65039; Edit</button>
+                    <button id="btn-admin-delete" class="flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">&#128465;&#65039; Delete</button>
                 </div>
             </div>
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Poll link</label>
+                <div class="flex bg-gray-50 border border-gray-300 rounded-xl p-1.5 focus-within:border-teal-500 transition-colors">
+                    <input type="text" id="doodle-share-url" readonly class="bg-transparent text-gray-800 text-sm font-mono px-3 py-2 flex-grow focus:outline-none">
+                    <button id="btn-doodle-copy" class="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition-all shadow-sm shrink-0">Copy link</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <button id="btn-share-wa-direct" class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 font-bold p-3 rounded-xl text-xs transition-colors">&#128172; Share via WhatsApp</button>
+                <button id="btn-mailto" class="flex items-center justify-center gap-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold p-3 rounded-xl text-xs transition-colors">&#9993;&#65039; Send email invite</button>
+            </div>
         </div>
+        <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-xs text-gray-400">Track live responses in real time.</p>
+            <button id="btn-go-to-vote" class="w-full sm:w-auto bg-gray-950 hover:bg-gray-800 text-white font-black py-3 px-6 rounded-xl text-xs transition-all shadow tracking-wide uppercase">View poll results &#128202;</button>
+        </div>
+    </div>
+</section>
 
-        <!-- Selected slots list -->
+<!-- VOTE -->
+<section id="screen-vote" class="fade-in hidden bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-md space-y-6">
+    <div class="border-b border-gray-200 pb-3 flex justify-between items-start gap-4">
         <div>
-            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selected time slots</h4>
-            <div id="selected-slots-list" class="flex flex-wrap gap-2"></div>
+            <span class="text-[10px] font-mono bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full uppercase tracking-widest">&#9679; LIVE</span>
+            <h2 id="vote-title" class="text-2xl font-black text-gray-950 mt-1">Loading...</h2>
+            <p id="vote-details" class="text-sm text-gray-500 mt-1"></p>
         </div>
-
-        <button id="btn-create-poll"
-            class="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-6 rounded-xl transition-all shadow-md active:scale-[0.99] text-base">
-            Create and share 🚀
-        </button>
-    </section>
-
-    <!-- ═══════════════════════ SCREEN: SHARE ════════════════════════ -->
-    <section id="screen-share" class="fade-in hidden grid grid-cols-1 md:grid-cols-12 bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-xl min-h-[460px]">
-        <div class="md:col-span-5 bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white flex flex-col justify-between border-r border-gray-100">
-            <div class="space-y-4">
-                <div class="inline-block bg-teal-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider shadow">
-                    ✓ Poll created
-                </div>
-                <h3 id="share-preview-title" class="text-2xl font-black leading-tight text-white tracking-tight">Yükleniyor...</h3>
-                <p id="share-preview-desc" class="text-slate-300 text-sm font-normal line-clamp-4 leading-relaxed"></p>
+        <button id="btn-back-to-share" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">&#9881;&#65039; Manage poll</button>
+    </div>
+    <div class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm border-l-4 border-l-teal-600">
+        <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-wider">Your availability</h3>
+        <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-4">
+            <div class="w-full sm:w-64">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Your name</label>
+                <input type="text" id="voter-name" placeholder="e.g. Alex" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-950 focus:outline-none focus:border-teal-500">
             </div>
-            <div class="pt-6 border-t border-slate-700/60 space-y-2.5">
-                <div class="flex items-center gap-2 text-xs text-slate-400">
-                    <span>📍 Location:</span>
-                    <strong id="share-preview-loc" class="text-slate-200">Not specified</strong>
-                </div>
-                <div class="flex items-center gap-2 text-xs text-slate-400">
-                    <span>📅 Options:</span>
-                    <strong id="share-preview-slots-count" class="text-slate-200">0 slots proposed</strong>
-                </div>
+            <div class="pt-5"><p class="text-xs text-gray-500">Enter name &rarr; mark availability &rarr; save</p></div>
+        </div>
+        <div class="mb-2 flex items-center justify-between">
+            <label class="text-xs font-bold text-gray-600 uppercase tracking-wider">Which times work for you?</label>
+            <div class="flex gap-2 text-[10px] font-bold">
+                <span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">&#10003; Works for me</span>
+                <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">&#8212; Does not work</span>
             </div>
         </div>
-
-        <div class="md:col-span-7 p-6 md:p-8 flex flex-col justify-between bg-white space-y-6">
-            <div class="space-y-5">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-                    <div>
-                        <h2 class="text-xl font-black text-gray-950">Invite people</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Share the link so participants can vote.</p>
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <button id="btn-admin-edit" class="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">✏️ Edit</button>
-                        <button id="btn-admin-delete" class="flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">🗑️ Delete</button>
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Poll link</label>
-                    <div class="flex bg-gray-50 border border-gray-300 rounded-xl p-1.5 focus-within:border-teal-500 transition-colors">
-                        <input type="text" id="doodle-share-url" readonly
-                            class="bg-transparent text-gray-800 text-sm font-mono px-3 py-2 flex-grow focus:outline-none">
-                        <button id="btn-doodle-copy"
-                            class="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition-all shadow-sm shrink-0">
-                            Copy link
-                        </button>
-                    </div>
-                    <!-- Warning shown only when running from file:// -->
-                    <div id="local-file-warning" class="hidden mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">
-                        ⚠️ Şu an yerel dosyadan çalıştırıyorsunuz. Bu link yalnızca sizin bilgisayarınızda açılır. Paylaşılabilir link için Slotify'ı bir web sunucusuna veya hosting hizmetine yükleyin.
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <button id="btn-share-wa-direct"
-                        class="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 font-bold p-3 rounded-xl text-xs transition-colors">
-                        💬 Share via WhatsApp
-                    </button>
-                    <button id="btn-mailto"
-                        class="flex items-center justify-center gap-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold p-3 rounded-xl text-xs transition-colors">
-                        ✉️ Send email invite
-                    </button>
-                </div>
-            </div>
-
-            <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-xs text-gray-400">Track live votes and calendar stats.</p>
-                <button id="btn-go-to-vote"
-                    class="w-full sm:w-auto bg-gray-950 hover:bg-gray-800 text-white font-black py-3 px-6 rounded-xl text-xs transition-all shadow tracking-wide uppercase">
-                    View poll results 📊
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- ═══════════════════════ SCREEN: VOTE ════════════════════════ -->
-    <section id="screen-vote" class="fade-in hidden bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-md space-y-6">
-        <div class="border-b border-gray-200 pb-3 flex justify-between items-start gap-4">
-            <div>
-                <span class="text-[10px] font-mono bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full uppercase tracking-widest">● LIVE</span>
-                <h2 id="vote-title" class="text-2xl font-black text-gray-950 mt-1">Yükleniyor...</h2>
-                <p id="vote-details" class="text-sm text-gray-500 mt-1"></p>
-            </div>
-            <button id="btn-back-to-share" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">
-                ⚙️ Manage poll
-            </button>
-        </div>
-
-        <!-- Katılım formu -->
-        <div class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm border-l-4 border-l-teal-600">
-            <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-wider">Your availability</h3>
-            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-4">
-                <div class="w-full sm:w-64">
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Your name</label>
-                    <input type="text" id="voter-name" placeholder="e.g. Alex"
-                        class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-950 focus:outline-none focus:border-teal-500">
-                </div>
-                <div class="pt-5">
-                    <p class="text-xs text-gray-500">Enter your name → mark your availability → save</p>
-                </div>
-            </div>
-            <div class="mb-2 flex items-center justify-between">
-                <label class="text-xs font-bold text-gray-600 uppercase tracking-wider">Which times work for you?</label>
-                <div class="flex gap-2 text-[10px] font-bold">
-                    <span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">✅ Works for me</span>
-                    <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">— Doesn't work</span>
-                </div>
-            </div>
-            <div id="slot-availability-grid" class="space-y-2 max-h-72 overflow-y-auto pr-1 mb-4"></div>
-            <button id="btn-submit-vote"
-                class="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.98]">
-                Save my availability ⚡
-            </button>
-        </div>
-
-        <!-- İstatistikler -->
-        <div class="bg-gray-50 border border-gray-200 rounded-xl p-5">
-            <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">📊 Availability overview</h3>
-            <div id="slot-stats-container" class="space-y-2"></div>
-        </div>
-
-        <!-- Katılımcı listesi -->
-        <div>
-            <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Participants</h3>
-            <div id="voters-list" class="flex flex-wrap gap-2"></div>
-        </div>
-    </section>
+        <div id="slot-availability-grid" class="space-y-2 max-h-72 overflow-y-auto pr-1 mb-4"></div>
+        <button id="btn-submit-vote" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-3 px-4 rounded-xl text-sm transition-all shadow-md">Save my availability &#9889;</button>
+    </div>
+    <div class="bg-gray-50 border border-gray-200 rounded-xl p-5">
+        <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">&#128202; Availability overview</h3>
+        <div id="slot-stats-container" class="space-y-2"></div>
+    </div>
+    <div>
+        <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Participants</h3>
+        <div id="voters-list" class="flex flex-wrap gap-2"></div>
+    </div>
+</section>
 </main>
 
 <footer class="text-center py-4 text-[11px] text-gray-400 border-t border-gray-200 bg-white shadow-inner">
-    Slotify © 2026 — Lightning-fast meeting scheduling.
+    Slotify &copy; 2026 &mdash; Lightning-fast meeting scheduling.
 </footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
-    getFirestore, doc, getDoc, deleteDoc, updateDoc, setDoc,
-    collection, addDoc, getDocs, onSnapshot, query, where, orderBy, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, deleteDoc, updateDoc, setDoc, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ── Firebase config ────────────────────────────────────────────────────
-const firebaseConfig = {
-    apiKey: "AIzaSyA88NrwF3U3-usUhlHfJLaWiyjkP7kV0dw",
-    authDomain: "slotify-33d2c.firebaseapp.com",
-    projectId: "slotify-33d2c",
-    storageBucket: "slotify-33d2c.firebasestorage.app",
-    messagingSenderId: "11338684770",
-    appId: "1:11338684770:web:32df846532a15f4c0c743b"
-};
+const firebaseConfig = { apiKey:"AIzaSyA88NrwF3U3-usUhlHfJLaWiyjkP7kV0dw", authDomain:"slotify-33d2c.firebaseapp.com", projectId:"slotify-33d2c", storageBucket:"slotify-33d2c.firebasestorage.app", messagingSenderId:"11338684770", appId:"1:11338684770:web:32df846532a15f4c0c743b" };
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-// ── App state ──────────────────────────────────────────────────────────
-let activePollId       = null;
-let unsubscribeLiveVotes = null;
-let globalMeetingTitle = "";
-let globalLocation     = "";
-let globalDesc         = "";
-let globalSlots        = [];
-let globalVotesData    = [];
-let selectedDuration   = 30;
-let tempSlots          = [];
-let currentWeekOffset  = 0;
+let activePollId=null, unsubscribeLiveVotes=null;
+let globalMeetingTitle="", globalLocation="", globalDesc="";
+let globalSlots=[], globalVotesData=[];
+let selectedDuration=30, tempSlots=[], currentWeekOffset=0;
 const _now = new Date();
-let currentMonthState  = { year: _now.getFullYear(), month: _now.getMonth() };
+let currentMonthState = { year:_now.getFullYear(), month:_now.getMonth() };
 
-// ── Dynamic week helpers ───────────────────────────────────────────────
 function getWeekDays(offset) {
     const today = new Date();
-    const dow = today.getDay();                         // 0=Sun
-    const diffToMon = dow === 0 ? -6 : 1 - dow;        // steps to Monday
+    const dow = today.getDay();
+    const diffToMon = dow===0 ? -6 : 1-dow;
     const monday = new Date(today);
-    monday.setDate(today.getDate() + diffToMon + offset * 7);
-    monday.setHours(0, 0, 0, 0);
-    const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        return { name: names[i], dateStr: d.toISOString().split('T')[0], date: d };
-    });
+    monday.setDate(today.getDate() + diffToMon + offset*7);
+    monday.setHours(0,0,0,0);
+    const names = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    return Array.from({length:7},(_,i)=>{ const d=new Date(monday); d.setDate(monday.getDate()+i); return {name:names[i], dateStr:d.toISOString().split('T')[0], date:d}; });
 }
 let daysData = getWeekDays(0);
 
-// ── DOM refs ───────────────────────────────────────────────────────────
-const screenCreate     = document.getElementById('screen-create');
-const screenShare      = document.getElementById('screen-share');
-const screenVote       = document.getElementById('screen-vote');
-const panelViewWeek    = document.getElementById('panel-view-week');
-const panelViewMonth   = document.getElementById('panel-view-month');
-const btnCreatePoll    = document.getElementById('btn-create-poll');
-const btnSubmitVote    = document.getElementById('btn-submit-vote');
-const btnDoodleCopy    = document.getElementById('btn-doodle-copy');
-const btnShareWaDirect = document.getElementById('btn-share-wa-direct');
-const btnGoToVote      = document.getElementById('btn-go-to-vote');
-const btnBackToShare   = document.getElementById('btn-back-to-share');
-const btnAdminEdit     = document.getElementById('btn-admin-edit');
-const btnAdminDelete   = document.getElementById('btn-admin-delete');
-const inputTitle       = document.getElementById('meeting-title');
-const inputLocation    = document.getElementById('meeting-location');
-const inputDesc        = document.getElementById('meeting-desc');
-const selectedSlotsList= document.getElementById('selected-slots-list');
-const allDayRow        = document.getElementById('all-day-row');
-const calendarGridBody = document.getElementById('calendar-grid-body');
-const miniMonthGrid    = document.getElementById('mini-month-grid');
+const screenCreate=document.getElementById('screen-create');
+const screenShare=document.getElementById('screen-share');
+const screenVote=document.getElementById('screen-vote');
+const panelViewWeek=document.getElementById('panel-view-week');
+const panelViewMonth=document.getElementById('panel-view-month');
+const btnCreatePoll=document.getElementById('btn-create-poll');
+const btnSubmitVote=document.getElementById('btn-submit-vote');
+const btnDoodleCopy=document.getElementById('btn-doodle-copy');
+const btnShareWaDirect=document.getElementById('btn-share-wa-direct');
+const btnGoToVote=document.getElementById('btn-go-to-vote');
+const btnBackToShare=document.getElementById('btn-back-to-share');
+const btnAdminEdit=document.getElementById('btn-admin-edit');
+const btnAdminDelete=document.getElementById('btn-admin-delete');
+const inputTitle=document.getElementById('meeting-title');
+const inputLocation=document.getElementById('meeting-location');
+const inputDesc=document.getElementById('meeting-desc');
+const selectedSlotsList=document.getElementById('selected-slots-list');
+const allDayRow=document.getElementById('all-day-row');
+const calendarGridBody=document.getElementById('calendar-grid-body');
+const miniMonthGrid=document.getElementById('mini-month-grid');
 const monthDaysContainer=document.getElementById('month-days-container');
-const weekHeaderRow    = document.getElementById('week-header-row');
-const weekRangeLabel   = document.getElementById('week-range-label');
-const sharePreviewTitle= document.getElementById('share-preview-title');
-const sharePreviewDesc = document.getElementById('share-preview-desc');
-const sharePreviewLoc  = document.getElementById('share-preview-loc');
-const sharePreviewSlotsCount = document.getElementById('share-preview-slots-count');
-const doodleShareUrl   = document.getElementById('doodle-share-url');
-const voteTitle        = document.getElementById('vote-title');
-const voteDetails      = document.getElementById('vote-details');
-// slotSelect removed - using multi-slot grid instead
-const votesTableBody   = document.getElementById('votes-table-body');
-const inputVoterName   = document.getElementById('voter-name');
-const slotStatsContainer = document.getElementById('slot-stats-container');
-const btnTabWeek       = document.getElementById('btn-tab-week');
-const btnTabMonth      = document.getElementById('btn-tab-month');
+const weekHeaderRow=document.getElementById('week-header-row');
+const weekRangeLabel=document.getElementById('week-range-label');
+const sharePreviewTitle=document.getElementById('share-preview-title');
+const sharePreviewDesc=document.getElementById('share-preview-desc');
+const sharePreviewLoc=document.getElementById('share-preview-loc');
+const sharePreviewSlotsCount=document.getElementById('share-preview-slots-count');
+const doodleShareUrl=document.getElementById('doodle-share-url');
+const voteTitle=document.getElementById('vote-title');
+const voteDetails=document.getElementById('vote-details');
+const inputVoterName=document.getElementById('voter-name');
+const slotStatsContainer=document.getElementById('slot-stats-container');
+const btnTabWeek=document.getElementById('btn-tab-week');
+const btnTabMonth=document.getElementById('btn-tab-month');
 
-// ── Render week header dynamically ─────────────────────────────────────
 function renderWeekHeader() {
-    const todayStr = new Date().toISOString().split('T')[0];
-    weekHeaderRow.innerHTML = '';
-
-    // First cell: label column
-    const labelCell = document.createElement('div');
-    labelCell.className = "text-gray-400 text-left pl-2 flex items-center text-xs font-bold";
-    labelCell.textContent = "Days";
-    weekHeaderRow.appendChild(labelCell);
-
-    daysData.forEach(day => {
-        const isWeekend = day.date.getDay() === 6 || day.date.getDay() === 0;
-        const isToday   = day.dateStr === todayStr;
-        const dateDisplay = day.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-
-        const col = document.createElement('div');
-        col.className = `text-center py-1 ${isToday ? 'today-col-header' : ''}`;
-        col.innerHTML = `
-            <span class="text-xs font-bold ${isWeekend ? 'text-teal-600' : 'text-gray-800'}">${day.name}</span><br>
-            <span class="text-[10px] font-normal ${isWeekend ? 'text-teal-400' : 'text-gray-400'}">${dateDisplay}</span>
-            ${isToday ? '<br><span class="text-[8px] font-black text-teal-500">● TODAY</span>' : ''}
-        `;
+    const todayStr=new Date().toISOString().split('T')[0];
+    weekHeaderRow.innerHTML='';
+    const lbl=document.createElement('div'); lbl.className="text-gray-400 text-left pl-2 flex items-center text-xs font-bold"; lbl.textContent="Days"; weekHeaderRow.appendChild(lbl);
+    daysData.forEach(day=>{
+        const isWeekend=day.date.getDay()===6||day.date.getDay()===0;
+        const isToday=day.dateStr===todayStr;
+        const dateDisplay=day.date.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+        const col=document.createElement('div'); col.className=`text-center py-1 ${isToday?'today-col-header':''}`;
+        col.innerHTML=`<span class="text-xs font-bold ${isWeekend?'text-teal-600':'text-gray-800'}">${day.name}</span><br><span class="text-[10px] font-normal ${isWeekend?'text-teal-400':'text-gray-400'}">${dateDisplay}</span>${isToday?'<br><span class="text-[8px] font-black text-teal-500">TODAY</span>':''}`;
         weekHeaderRow.appendChild(col);
     });
 }
 
 function updateWeekRangeLabel() {
-    const fmt = { day: 'numeric', month: 'long' };
-    const start = daysData[0].date.toLocaleDateString('tr-TR', fmt);
-    const end   = daysData[6].date.toLocaleDateString('tr-TR', { ...fmt, year: 'numeric' });
-    weekRangeLabel.textContent = `${start} – ${end}`;
+    const fmt={day:'numeric',month:'long'};
+    weekRangeLabel.textContent=daysData[0].date.toLocaleDateString('en-GB',fmt)+' – '+daysData[6].date.toLocaleDateString('en-GB',{...fmt,year:'numeric'});
 }
 
-// ── Week navigation ────────────────────────────────────────────────────
-document.getElementById('btn-prev-week').addEventListener('click', () => {
-    currentWeekOffset--;
-    daysData = getWeekDays(currentWeekOffset);
-    renderWeekHeader();
-    updateWeekRangeLabel();
-    initCalendarGrid();
-});
-document.getElementById('btn-next-week').addEventListener('click', () => {
-    currentWeekOffset++;
-    daysData = getWeekDays(currentWeekOffset);
-    renderWeekHeader();
-    updateWeekRangeLabel();
-    initCalendarGrid();
-});
+document.getElementById('btn-prev-week').addEventListener('click',()=>{ currentWeekOffset--; daysData=getWeekDays(currentWeekOffset); renderWeekHeader(); updateWeekRangeLabel(); initCalendarGrid(); });
+document.getElementById('btn-next-week').addEventListener('click',()=>{ currentWeekOffset++; daysData=getWeekDays(currentWeekOffset); renderWeekHeader(); updateWeekRangeLabel(); initCalendarGrid(); });
+document.getElementById('btn-prev-month').addEventListener('click',()=>{ currentMonthState.month--; if(currentMonthState.month<0){currentMonthState.month=11;currentMonthState.year--;} buildMiniMonthCalendar(); });
+document.getElementById('btn-next-month').addEventListener('click',()=>{ currentMonthState.month++; if(currentMonthState.month>11){currentMonthState.month=0;currentMonthState.year++;} buildMiniMonthCalendar(); });
 
-// ── Month navigation ───────────────────────────────────────────────────
-document.getElementById('btn-prev-month').addEventListener('click', () => {
-    currentMonthState.month--;
-    if (currentMonthState.month < 0) { currentMonthState.month = 11; currentMonthState.year--; }
-    buildMiniMonthCalendar();
-});
-document.getElementById('btn-next-month').addEventListener('click', () => {
-    currentMonthState.month++;
-    if (currentMonthState.month > 11) { currentMonthState.month = 0; currentMonthState.year++; }
-    buildMiniMonthCalendar();
-});
+btnTabWeek.addEventListener('click',()=>{ btnTabWeek.classList.add('active'); btnTabMonth.classList.remove('active'); panelViewWeek.classList.remove('hidden'); panelViewMonth.classList.add('hidden'); syncGridUiWithSlots(); });
+btnTabMonth.addEventListener('click',()=>{ btnTabMonth.classList.add('active'); btnTabWeek.classList.remove('active'); panelViewMonth.classList.remove('hidden'); panelViewWeek.classList.add('hidden'); buildMiniMonthCalendar(); renderMonthDaysUi(); });
 
-// ── View tab switching ─────────────────────────────────────────────────
-btnTabWeek.addEventListener('click', () => {
-    btnTabWeek.classList.add('active');   btnTabMonth.classList.remove('active');
-    panelViewWeek.classList.remove('hidden'); panelViewMonth.classList.add('hidden');
-    syncGridUiWithSlots();
-});
-btnTabMonth.addEventListener('click', () => {
-    btnTabMonth.classList.add('active');  btnTabWeek.classList.remove('active');
-    panelViewMonth.classList.remove('hidden'); panelViewWeek.classList.add('hidden');
-    buildMiniMonthCalendar(); renderMonthDaysUi();
-});
+const durationButtons=document.querySelectorAll('.btn-duration');
+durationButtons.forEach(btn=>{ btn.addEventListener('click',function(e){ e.preventDefault(); durationButtons.forEach(b=>{b.classList.remove('active-duration');b.classList.add('bg-white','text-gray-700','border-gray-300');}); this.classList.remove('bg-white','text-gray-700','border-gray-300'); this.classList.add('active-duration'); selectedDuration=this.getAttribute('data-mins')==="allday"?"allday":parseInt(this.getAttribute('data-mins')); }); });
 
-// ── Duration buttons ───────────────────────────────────────────────────
-const durationButtons = document.querySelectorAll('.btn-duration');
-durationButtons.forEach(btn => {
-    btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        durationButtons.forEach(b => {
-            b.classList.remove('active-duration');
-            b.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
-        });
-        this.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
-        this.classList.add('active-duration');
-        selectedDuration = this.getAttribute('data-mins') === "allday"
-            ? "allday"
-            : parseInt(this.getAttribute('data-mins'));
-    });
-});
-
-// ── Calendar grid ──────────────────────────────────────────────────────
 function initCalendarGrid() {
-    // All-day row
-    allDayRow.innerHTML = `<div class="text-left text-[11px] font-black text-blue-700 flex items-center pl-1 uppercase tracking-wider">All day</div>`;
-    daysData.forEach(day => {
-        const dayCell = document.createElement('div');
-        dayCell.setAttribute('data-allday-date', day.dateStr);
-        dayCell.className = "p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors";
-        dayCell.style.cssText = "background:#f3f4f6; border:1px dashed #d1d5db; border-radius:4px;";
-        dayCell.innerHTML = `<span>+ All day</span>`;
-        dayCell.addEventListener('click', () => handleAllDayClick(day.dateStr));
-        allDayRow.appendChild(dayCell);
+    allDayRow.innerHTML='<div class="text-left text-[11px] font-black text-blue-700 flex items-center pl-1 uppercase tracking-wider">All day</div>';
+    daysData.forEach(day=>{
+        const c=document.createElement('div'); c.setAttribute('data-allday-date',day.dateStr);
+        c.className="p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors";
+        c.style.cssText="background:#f3f4f6;border:1px dashed #d1d5db;border-radius:4px;";
+        c.innerHTML='<span>+ All day</span>'; c.addEventListener('click',()=>handleAllDayClick(day.dateStr)); allDayRow.appendChild(c);
     });
-
-    // Hour rows
-    calendarGridBody.innerHTML = '';
-    for (let hour = 8; hour <= 20; hour++) {
-        const hourStr = hour < 10 ? `0${hour}:00` : `${hour}:00`;
-        const row = document.createElement('div');
-        row.className = "grid grid-cols-8 gap-1 items-center text-center";
-        row.style.cssText = "border-top:1px solid #e5e7eb; padding: 2px 0;";
-        row.innerHTML = `<div class="text-left text-xs font-mono text-gray-400 pl-1" style="font-size:11px;">${hourStr}</div>`;
-        daysData.forEach(day => {
-            const cell = document.createElement('div');
-            cell.setAttribute('data-date', day.dateStr);
-            cell.setAttribute('data-hour', hourStr);
-            cell.className = "calendar-grid-cell h-10 flex items-center justify-center text-gray-400 font-bold cursor-pointer select-none text-xs";
-            cell.style.cssText = "background:#f3f4f6; border:none; border-top:1px solid #ffffff; border-radius:4px;";
-            cell.innerHTML = `<span class="opacity-0 group-hover:opacity-100">+</span>`;
-            cell.addEventListener('click', () => {
-                if (selectedDuration === "allday") handleAllDayClick(day.dateStr);
-                else handleHourClick(day.dateStr, hourStr);
-            });
+    calendarGridBody.innerHTML='';
+    for(let hour=8;hour<=20;hour++){
+        const hourStr=(hour<10?'0'+hour:hour)+':00';
+        const row=document.createElement('div'); row.className="grid grid-cols-8 gap-1 items-center text-center"; row.style.cssText="border-top:1px solid #e5e7eb;padding:2px 0;";
+        row.innerHTML='<div class="text-left text-xs font-mono text-gray-400 pl-1" style="font-size:11px;">'+hourStr+'</div>';
+        daysData.forEach(day=>{
+            const cell=document.createElement('div'); cell.setAttribute('data-date',day.dateStr); cell.setAttribute('data-hour',hourStr);
+            cell.className="calendar-grid-cell h-10 flex items-center justify-center text-gray-400 font-bold cursor-pointer select-none text-xs";
+            cell.style.cssText="background:#f3f4f6;border:none;border-top:1px solid #ffffff;border-radius:4px;";
+            cell.addEventListener('click',()=>{ if(selectedDuration==="allday") handleAllDayClick(day.dateStr); else handleHourClick(day.dateStr,hourStr); });
             row.appendChild(cell);
         });
         calendarGridBody.appendChild(row);
     }
-    syncGridUiWithSlots();
-    renderTempSlots();
+    syncGridUiWithSlots(); renderTempSlots();
 }
 
 function handleAllDayClick(dateStr) {
-    const existing = tempSlots.findIndex(s => s.dateKey === dateStr && s.duration === "allday");
-    if (existing > -1) { tempSlots.splice(existing, 1); }
-    else {
-        tempSlots = tempSlots.filter(s => s.dateKey !== dateStr);
-        tempSlots.push({
-            start: new Date(`${dateStr}T00:00:00`).toISOString(),
-            duration: "allday",
-            display: `📅 ${dateStr} (All day)`,
-            dateKey: dateStr, hourKey: "allday"
-        });
-    }
-    syncGridUiWithSlots(); renderTempSlots();
+    const ex=tempSlots.findIndex(s=>s.dateKey===dateStr&&s.duration==="allday");
+    if(ex>-1){tempSlots.splice(ex,1);}
+    else{tempSlots=tempSlots.filter(s=>s.dateKey!==dateStr);tempSlots.push({start:new Date(dateStr+'T00:00:00').toISOString(),duration:"allday",display:'All day: '+dateStr,dateKey:dateStr,hourKey:"allday"});}
+    syncGridUiWithSlots();renderTempSlots();
 }
 
-function handleHourClick(dateStr, hourStr) {
-    tempSlots = tempSlots.filter(s => !(s.dateKey === dateStr && s.duration === "allday"));
-    const startObj = new Date(`${dateStr}T${hourStr}:00`);
-    const endObj   = new Date(startObj.getTime() + selectedDuration * 60000);
-    const fmt      = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-    const startDisplay = startObj.toLocaleString('tr-TR', fmt);
-    const endHourStr   = endObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-
-    const existing = tempSlots.findIndex(s => s.dateKey === dateStr && s.hourKey === hourStr);
-    if (existing > -1) { tempSlots.splice(existing, 1); }
-    else {
-        tempSlots.push({
-            start: startObj.toISOString(),
-            duration: selectedDuration,
-            display: `📅 ${startDisplay} - ${endHourStr} (${selectedDuration} min)`,
-            dateKey: dateStr, hourKey: hourStr
-        });
-    }
-    syncGridUiWithSlots(); renderTempSlots();
+function handleHourClick(dateStr,hourStr) {
+    tempSlots=tempSlots.filter(s=>!(s.dateKey===dateStr&&s.duration==="allday"));
+    const startObj=new Date(dateStr+'T'+hourStr+':00');
+    const endObj=new Date(startObj.getTime()+selectedDuration*60000);
+    const endHourStr=endObj.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const dateDisplay=startObj.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const startTimeStr=hourStr;
+    const ex=tempSlots.findIndex(s=>s.dateKey===dateStr&&s.hourKey===hourStr);
+    if(ex>-1){tempSlots.splice(ex,1);}
+    else{tempSlots.push({start:startObj.toISOString(),duration:selectedDuration,display:dateDisplay+' '+startTimeStr+' - '+endHourStr+' ('+selectedDuration+' min)',dateKey:dateStr,hourKey:hourStr});}
+    syncGridUiWithSlots();renderTempSlots();
 }
 
-// ── Month calendar ─────────────────────────────────────────────────────
 function buildMiniMonthCalendar() {
-    miniMonthGrid.innerHTML = '';
-    const { year, month } = currentMonthState;
-
-    // Label (e.g. "Mayıs 2026")
-    const raw = new Date(year, month, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-    document.getElementById('month-label').textContent = raw.charAt(0).toUpperCase() + raw.slice(1);
-
-    const firstDow    = new Date(year, month, 1).getDay(); // 0=Sun
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const startOffset = firstDow === 0 ? 6 : firstDow - 1; // Monday-based
-    const todayStr    = new Date().toISOString().split('T')[0];
-
-    for (let i = 0; i < startOffset; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'mini-month-day empty-day';
-        miniMonthGrid.appendChild(empty);
-    }
-    for (let day = 1; day <= daysInMonth; day++) {
-        const mm = String(month + 1).padStart(2, '0');
-        const dd = String(day).padStart(2, '0');
-        const fullDateStr = `${year}-${mm}-${dd}`;
-        const isSelected  = tempSlots.some(s => s.dateKey === fullDateStr);
-        const isToday     = fullDateStr === todayStr;
-
-        const dayCell = document.createElement('div');
-        dayCell.className = `mini-month-day ${isSelected ? 'selected' : ''} ${isToday && !isSelected ? 'today-ring' : ''}`;
-        dayCell.textContent = day;
-        dayCell.addEventListener('click', () => toggleMonthDateSelection(fullDateStr));
-        miniMonthGrid.appendChild(dayCell);
+    miniMonthGrid.innerHTML='';
+    const {year,month}=currentMonthState;
+    const raw=new Date(year,month,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    document.getElementById('month-label').textContent=raw.charAt(0).toUpperCase()+raw.slice(1);
+    const firstDow=new Date(year,month,1).getDay();
+    const daysInMonth=new Date(year,month+1,0).getDate();
+    const startOffset=firstDow===0?6:firstDow-1;
+    const todayStr=new Date().toISOString().split('T')[0];
+    for(let i=0;i<startOffset;i++){const e=document.createElement('div');e.className='mini-month-day empty-day';miniMonthGrid.appendChild(e);}
+    for(let day=1;day<=daysInMonth;day++){
+        const mm=String(month+1).padStart(2,'0'),dd=String(day).padStart(2,'0');
+        const fullDateStr=year+'-'+mm+'-'+dd;
+        const isSel=tempSlots.some(s=>s.dateKey===fullDateStr);
+        const isToday=fullDateStr===todayStr;
+        const dc=document.createElement('div'); dc.className='mini-month-day '+(isSel?'selected':'')+(isToday&&!isSel?' today-ring':''); dc.textContent=day;
+        dc.addEventListener('click',()=>toggleMonthDateSelection(fullDateStr)); miniMonthGrid.appendChild(dc);
     }
 }
 
 function toggleMonthDateSelection(dateStr) {
-    if (tempSlots.some(s => s.dateKey === dateStr)) {
-        tempSlots = tempSlots.filter(s => s.dateKey !== dateStr);
-    } else {
-        tempSlots.push({
-            start: new Date(`${dateStr}T09:00:00`).toISOString(),
-            duration: 60, dateKey: dateStr, hourKey: "09:00",
-            display: `📅 ${dateStr} 09:00 - 10:00 (60 min)`
-        });
-    }
-    buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
+    if(tempSlots.some(s=>s.dateKey===dateStr)){tempSlots=tempSlots.filter(s=>s.dateKey!==dateStr);}
+    else{tempSlots.push({start:new Date(dateStr+'T09:00:00').toISOString(),duration:60,dateKey:dateStr,hourKey:"09:00",display:dateStr+' 09:00 - 10:00 (60 min)'});}
+    buildMiniMonthCalendar();renderMonthDaysUi();renderTempSlots();
 }
 
 function renderMonthDaysUi() {
-    monthDaysContainer.innerHTML = '';
-    const activeDates = [...new Set(tempSlots.map(s => s.dateKey))].sort();
-    if (activeDates.length === 0) {
-        monthDaysContainer.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-16">Click on one or more days in the calendar to add time slots.</p>`;
-        return;
-    }
-    activeDates.forEach(dateStr => {
-        const daySlots = tempSlots.filter(s => s.dateKey === dateStr);
-        const card = document.createElement('div');
-        card.className = "bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3 fade-in";
-
-        const [y, m, d] = dateStr.split('-').map(Number);
-        const localDate = new Date(y, m - 1, d);
-        const headerRow = document.createElement('div');
-        headerRow.className = "flex justify-between items-center border-b border-gray-100 pb-2";
-        headerRow.innerHTML = `<span class="text-xs font-black text-blue-600 uppercase tracking-wider">${localDate.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>`;
-
-        const btnRemoveGroup = document.createElement('button');
-        btnRemoveGroup.className = "text-gray-400 hover:text-red-500 text-xs font-bold";
-        btnRemoveGroup.textContent = "Remove day";
-        btnRemoveGroup.onclick = () => {
-            tempSlots = tempSlots.filter(s => s.dateKey !== dateStr);
-            buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
-        };
-        headerRow.appendChild(btnRemoveGroup);
-        card.appendChild(headerRow);
-
-        daySlots.forEach(slot => {
-            const row = document.createElement('div');
-            row.className = "flex flex-wrap items-center gap-3 bg-gray-50/50 p-2 rounded-lg border border-gray-100";
-
-            const timeDiv = document.createElement('div');
-            timeDiv.className = "flex flex-col";
-            timeDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Start</span>`;
-            const timeInput = document.createElement('input');
-            timeInput.type = "time";
-            timeInput.value = slot.hourKey === "allday" ? "09:00" : slot.hourKey;
-            timeInput.className = "bg-white border border-gray-200 rounded-md px-2 py-1 text-xs font-mono text-gray-800 outline-none focus:border-blue-500";
-            timeInput.onchange = e => updateMonthSlotData(slot, 'time', e.target.value);
-            timeDiv.appendChild(timeInput); row.appendChild(timeDiv);
-
-            const durDiv = document.createElement('div');
-            durDiv.className = "flex flex-col";
-            durDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Duration</span>`;
-            const durSelect = document.createElement('select');
-            durSelect.className = "bg-white border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-800 outline-none focus:border-blue-500";
-            durSelect.innerHTML = `
-                <option value="15"     ${slot.duration === 15     ? 'selected' : ''}>15 min</option>
-                <option value="30"     ${slot.duration === 30     ? 'selected' : ''}>30 min</option>
-                <option value="60"     ${slot.duration === 60     ? 'selected' : ''}>1h</option>
-                <option value="90"     ${slot.duration === 90     ? 'selected' : ''}>90 min</option>
-                <option value="120"    ${slot.duration === 120    ? 'selected' : ''}>2h</option>
-                <option value="allday" ${slot.duration === 'allday'? 'selected' : ''}>All day</option>
-            `;
-            durSelect.onchange = e => updateMonthSlotData(slot, 'duration', e.target.value);
-            durDiv.appendChild(durSelect); row.appendChild(durDiv);
-
-            const btnDel = document.createElement('button');
-            btnDel.className = "text-gray-300 hover:text-red-500 font-bold text-sm mt-4 ml-auto";
-            btnDel.innerHTML = "✕";
-            btnDel.onclick = () => {
-                tempSlots = tempSlots.filter(s => s !== slot);
-                if (!tempSlots.some(s => s.dateKey === dateStr)) buildMiniMonthCalendar();
-                renderMonthDaysUi(); renderTempSlots();
-            };
-            row.appendChild(btnDel); card.appendChild(row);
+    monthDaysContainer.innerHTML='';
+    const activeDates=[...new Set(tempSlots.map(s=>s.dateKey))].sort();
+    if(activeDates.length===0){monthDaysContainer.innerHTML='<p class="text-xs text-gray-400 italic text-center py-16">Click on days in the calendar to add time slots.</p>';return;}
+    activeDates.forEach(dateStr=>{
+        const daySlots=tempSlots.filter(s=>s.dateKey===dateStr);
+        const card=document.createElement('div'); card.className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3 fade-in";
+        const [y,m,d]=dateStr.split('-').map(Number);
+        const localDate=new Date(y,m-1,d);
+        const headerRow=document.createElement('div'); headerRow.className="flex justify-between items-center border-b border-gray-100 pb-2";
+        headerRow.innerHTML='<span class="text-xs font-black text-blue-600 uppercase tracking-wider">'+localDate.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</span>';
+        const btnRmv=document.createElement('button'); btnRmv.className="text-gray-400 hover:text-red-500 text-xs font-bold"; btnRmv.textContent="Remove day";
+        btnRmv.onclick=()=>{tempSlots=tempSlots.filter(s=>s.dateKey!==dateStr);buildMiniMonthCalendar();renderMonthDaysUi();renderTempSlots();};
+        headerRow.appendChild(btnRmv); card.appendChild(headerRow);
+        daySlots.forEach(slot=>{
+            const row=document.createElement('div'); row.className="flex flex-wrap items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100";
+            const td=document.createElement('div'); td.className="flex flex-col"; td.innerHTML='<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Start</span>';
+            const ti=document.createElement('input'); ti.type="time"; ti.value=slot.hourKey==="allday"?"09:00":slot.hourKey; ti.className="bg-white border border-gray-200 rounded-md px-2 py-1 text-xs font-mono text-gray-800 outline-none"; ti.onchange=e=>updateMonthSlotData(slot,'time',e.target.value); td.appendChild(ti); row.appendChild(td);
+            const dd2=document.createElement('div'); dd2.className="flex flex-col"; dd2.innerHTML='<span class="text-[10px] font-bold text-gray-400 uppercase mb-1">Duration</span>';
+            const ds=document.createElement('select'); ds.className="bg-white border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-800 outline-none";
+            ds.innerHTML='<option value="15" '+(slot.duration===15?'selected':'')+'>15 min</option><option value="30" '+(slot.duration===30?'selected':'')+'>30 min</option><option value="60" '+(slot.duration===60?'selected':'')+'>1h</option><option value="90" '+(slot.duration===90?'selected':'')+'>90 min</option><option value="120" '+(slot.duration===120?'selected':'')+'>2h</option><option value="allday" '+(slot.duration==='allday'?'selected':'')+'>All day</option>';
+            ds.onchange=e=>updateMonthSlotData(slot,'duration',e.target.value); dd2.appendChild(ds); row.appendChild(dd2);
+            const bd=document.createElement('button'); bd.className="text-gray-300 hover:text-red-500 font-bold text-sm mt-4 ml-auto"; bd.innerHTML="&#10005;";
+            bd.onclick=()=>{tempSlots=tempSlots.filter(s=>s!==slot);if(!tempSlots.some(s=>s.dateKey===dateStr))buildMiniMonthCalendar();renderMonthDaysUi();renderTempSlots();};
+            row.appendChild(bd); card.appendChild(row);
         });
-
-        const btnAddTimes = document.createElement('button');
-        btnAddTimes.className = "text-blue-600 hover:text-blue-700 text-xs font-black block pt-1";
-        btnAddTimes.innerHTML = "+ Add time";
-        btnAddTimes.onclick = () => {
-            let nextHour = "10:00";
-            if (daySlots.length > 0 && daySlots[daySlots.length - 1].hourKey !== "allday") {
-                const h = parseInt(daySlots[daySlots.length - 1].hourKey.split(':')[0]) + 1;
-                nextHour = (h < 10 ? `0${h}` : `${h}`) + ":00";
-            }
-            tempSlots.push({
-                start: new Date(`${dateStr}T${nextHour}:00`).toISOString(),
-                duration: 60, dateKey: dateStr, hourKey: nextHour,
-                display: `📅 ${dateStr} ${nextHour} - ${nextHour} (60 min)`
-            });
-            updateMonthSlotData(tempSlots[tempSlots.length - 1], 'time', nextHour);
-        };
-        card.appendChild(btnAddTimes);
-        monthDaysContainer.appendChild(card);
+        const btnAdd=document.createElement('button'); btnAdd.className="text-blue-600 hover:text-blue-700 text-xs font-black block pt-1"; btnAdd.innerHTML="+ Add time";
+        btnAdd.onclick=()=>{let nh="10:00"; if(daySlots.length>0&&daySlots[daySlots.length-1].hourKey!=="allday"){const h=parseInt(daySlots[daySlots.length-1].hourKey.split(':')[0])+1;nh=(h<10?'0'+h:h)+':00';} tempSlots.push({start:new Date(dateStr+'T'+nh+':00').toISOString(),duration:60,dateKey:dateStr,hourKey:nh,display:dateStr+' '+nh+' (60 min)'}); updateMonthSlotData(tempSlots[tempSlots.length-1],'time',nh);};
+        card.appendChild(btnAdd); monthDaysContainer.appendChild(card);
     });
 }
 
-function updateMonthSlotData(slotRef, type, value) {
-    if (type === 'time')     slotRef.hourKey  = value;
-    else if (type === 'duration') slotRef.duration = value === 'allday' ? 'allday' : parseInt(value);
-
-    if (slotRef.duration === 'allday') {
-        slotRef.hourKey = "allday";
-        slotRef.start   = new Date(`${slotRef.dateKey}T00:00:00`).toISOString();
-        slotRef.display = `📅 ${slotRef.dateKey} (All day)`;
-    } else {
-        if (slotRef.hourKey === "allday") slotRef.hourKey = "09:00";
-        const startObj = new Date(`${slotRef.dateKey}T${slotRef.hourKey}:00`);
-        const endObj   = new Date(startObj.getTime() + slotRef.duration * 60000);
-        slotRef.start  = startObj.toISOString();
-        const fmt      = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-        slotRef.display = `📅 ${startObj.toLocaleString('tr-TR', fmt)} - ${endObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} (${slotRef.duration} min)`;
-    }
-    renderMonthDaysUi(); renderTempSlots();
+function updateMonthSlotData(slotRef,type,value) {
+    if(type==='time')slotRef.hourKey=value;
+    else if(type==='duration')slotRef.duration=value==='allday'?'allday':parseInt(value);
+    if(slotRef.duration==='allday'){slotRef.hourKey="allday";slotRef.start=new Date(slotRef.dateKey+'T00:00:00').toISOString();slotRef.display='All day: '+slotRef.dateKey;}
+    else{if(slotRef.hourKey==="allday")slotRef.hourKey="09:00"; const so=new Date(slotRef.dateKey+'T'+slotRef.hourKey+':00'),eo=new Date(so.getTime()+slotRef.duration*60000); slotRef.start=so.toISOString(); slotRef.display=slotRef.dateKey+' '+slotRef.hourKey+' - '+eo.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' ('+slotRef.duration+' min)';}
+    renderMonthDaysUi();renderTempSlots();
 }
 
-// ── Sync grid UI with tempSlots ────────────────────────────────────────
 function syncGridUiWithSlots() {
-    document.querySelectorAll('.calendar-grid-cell').forEach(cell => {
-        cell.className = "calendar-grid-cell h-10 flex items-center justify-center text-gray-400 font-bold cursor-pointer select-none text-xs";
-        cell.style.cssText = "background:#f3f4f6; border:none; border-top:1px solid #ffffff; border-radius:4px;";
-        cell.innerHTML = '';
-    });
-    daysData.forEach(day => {
-        const adCell = document.querySelector(`[data-allday-date="${day.dateStr}"]`);
-        if (adCell) {
-            adCell.className = "p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors"; adCell.style.cssText = "background:#f3f4f6;border:1px dashed #d1d5db;border-radius:4px;"; adCell.innerHTML = `<span>+ All day</span>`;
-        }
-    });
-    tempSlots.forEach(slot => {
-        if (slot.duration === "allday") {
-            const adCell = document.querySelector(`[data-allday-date="${slot.dateKey}"]`);
-            if (adCell) {
-                adCell.className = "allday-badge flex items-center justify-center relative";
-                adCell.innerHTML = `<span>✓ All day</span><div class="absolute top-0.5 right-1 text-[9px] text-white font-bold">✕</div>`;
-            }
-            document.querySelectorAll(`[data-date="${slot.dateKey}"]`).forEach(cell => {
-                cell.classList.add('blocked-cell'); cell.innerHTML = `🔒`;
-            });
+    document.querySelectorAll('.calendar-grid-cell').forEach(cell=>{cell.className="calendar-grid-cell h-10 flex items-center justify-center text-gray-400 font-bold cursor-pointer select-none text-xs";cell.style.cssText="background:#f3f4f6;border:none;border-top:1px solid #ffffff;border-radius:4px;";cell.innerHTML='';});
+    daysData.forEach(day=>{const ac=document.querySelector('[data-allday-date="'+day.dateStr+'"]');if(ac){ac.className="p-1.5 min-h-[38px] flex items-center justify-center text-gray-400 text-[11px] cursor-pointer transition-colors";ac.style.cssText="background:#f3f4f6;border:1px dashed #d1d5db;border-radius:4px;";ac.innerHTML='<span>+ All day</span>';}});
+    tempSlots.forEach(slot=>{
+        if(slot.duration==="allday"){
+            const ac=document.querySelector('[data-allday-date="'+slot.dateKey+'"]');
+            if(ac){ac.className="allday-badge flex items-center justify-center relative";ac.innerHTML='<span>&#10003; All day</span>';}
+            document.querySelectorAll('[data-date="'+slot.dateKey+'"]').forEach(cell=>{cell.classList.add('blocked-cell');cell.innerHTML='&#128274;';});
         } else {
-            const activeCell = document.querySelector(`[data-date="${slot.dateKey}"][data-hour="${slot.hourKey}"]`);
-            if (activeCell) {
-                const [sH, sM] = slot.hourKey.split(':').map(Number);
-                const startTotalMins = sH * 60 + sM;
-                const endTotalMins   = startTotalMins + slot.duration;
-                const endStr = `${String(Math.floor(endTotalMins/60)).padStart(2,'0')}:${String(endTotalMins%60).padStart(2,'0')}`;
-
-                // Kaç ara satır kaplanacak?
-                const coveredHours = [];
-                for (let h = 8; h <= 20; h++) {
-                    if (h * 60 > startTotalMins && h * 60 < endTotalMins) coveredHours.push(h);
-                }
-                const hasCovers = coveredHours.length > 0;
-
-                // Ana blok — alt satır varsa sadece üst köşeleri yuvarlat
-                activeCell.className = `calendar-grid-cell text-white selected-cell flex items-start justify-between font-bold cursor-pointer select-none text-xs overflow-hidden slot-h-${slot.duration}`;
-                const borderBottom = hasCovers ? 'none' : '1px solid #1a7f37';
-                activeCell.style.cssText = 'background:#2da44e; border:1px solid #1a7f37; border-bottom:' + borderBottom + '; border-radius:' + (hasCovers ? '6px 6px 0 0' : '6px') + '; position:relative; z-index:21;';
-                activeCell.innerHTML = `
-                    <div class="flex flex-col justify-start h-full w-full p-1.5 leading-tight">
-                        <span class="font-black text-[11px] text-white">${slot.hourKey} – ${endStr}</span>
-                        <span class="text-[9px] text-teal-100 font-normal mt-0.5">${slot.duration} min</span>
-                    </div>
-                    <div class="text-white text-[11px] font-black p-1 opacity-70 hover:opacity-100 shrink-0">✕</div>
-                `;
-
-                // Alt satırları üst blokla aynı renkte doldur — kesintisiz tek blok
-                coveredHours.forEach((h, idx) => {
-                    const isLast = idx === coveredHours.length - 1;
-                    const hStr = (h < 10 ? '0' + h : h) + ':00';
-                    const coveredCell = document.querySelector('[data-date="' + slot.dateKey + '"][data-hour="' + hStr + '"]');
-                    if (coveredCell) {
-                        coveredCell.className = 'calendar-grid-cell select-none';
-                        coveredCell.innerHTML = '';
-                        const radius = isLast ? '0 0 6px 6px' : '0';
-                        coveredCell.style.cssText = 'background:rgb(20,184,166);border:1px solid #1a7f37;border-top:none;border-radius:' + radius + ';height:60px;margin-top:-20px;position:relative;z-index:19;pointer-events:none;cursor:default;';
-                    }
+            const ac=document.querySelector('[data-date="'+slot.dateKey+'"][data-hour="'+slot.hourKey+'"]');
+            if(ac){
+                const [sH,sM]=slot.hourKey.split(':').map(Number);
+                const stM=sH*60+sM,etM=stM+slot.duration;
+                const endStr=String(Math.floor(etM/60)).padStart(2,'0')+':'+String(etM%60).padStart(2,'0');
+                const coveredHours=[];
+                for(let h=8;h<=20;h++){if(h*60>stM&&h*60<etM)coveredHours.push(h);}
+                const hasCov=coveredHours.length>0;
+                ac.className='calendar-grid-cell text-white selected-cell flex items-start justify-between font-bold cursor-pointer select-none text-xs overflow-hidden slot-h-'+slot.duration;
+                const bb=hasCov?'none':'1px solid #1a7f37';
+                ac.style.cssText='background:#2da44e;border:1px solid #1a7f37;border-bottom:'+bb+';border-radius:'+(hasCov?'6px 6px 0 0':'6px')+';position:relative;z-index:21;';
+                ac.innerHTML='<div class="flex flex-col justify-start h-full w-full p-1.5 leading-tight"><span class="font-black text-[11px] text-white">'+slot.hourKey+' – '+endStr+'</span><span class="text-[9px] text-teal-100 font-normal mt-0.5">'+slot.duration+' min</span></div><div class="text-white text-[11px] font-black p-1 opacity-70 hover:opacity-100 shrink-0">&#10005;</div>';
+                coveredHours.forEach((h,idx)=>{
+                    const isLast=idx===coveredHours.length-1;
+                    const hStr=(h<10?'0'+h:h)+':00';
+                    const cc=document.querySelector('[data-date="'+slot.dateKey+'"][data-hour="'+hStr+'"]');
+                    if(cc){cc.className='calendar-grid-cell select-none';cc.innerHTML='';const r=isLast?'0 0 6px 6px':'0';cc.style.cssText='background:#2da44e;border:1px solid #1a7f37;border-top:none;border-radius:'+r+';height:60px;margin-top:-20px;position:relative;z-index:19;pointer-events:none;cursor:default;';}
                 });
             }
         }
     });
 }
 
-// ── Render slot badges ─────────────────────────────────────────────────
 function renderTempSlots() {
-    selectedSlotsList.innerHTML = '';
-    if (tempSlots.length === 0) {
-        selectedSlotsList.innerHTML = `<p class="text-xs text-gray-400 italic">Click on the calendar to add time slots...</p>`;
-        return;
-    }
-    tempSlots.forEach((slot, index) => {
-        const badge = document.createElement('div');
-        badge.className = `${slot.duration === 'allday' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-teal-50 text-teal-700 border-teal-200'} border rounded-full px-3 py-1.5 text-xs font-mono flex items-center gap-2 fade-in shadow-sm`;
-        badge.innerHTML = `<span>${slot.display}</span><button class="text-red-500 hover:text-red-700 font-bold focus:outline-none" data-index="${index}">✕</button>`;
+    selectedSlotsList.innerHTML='';
+    if(tempSlots.length===0){selectedSlotsList.innerHTML='<p class="text-xs text-gray-400 italic">Click on the calendar to add time slots...</p>';return;}
+    tempSlots.forEach((slot,index)=>{
+        const badge=document.createElement('div');
+        badge.className=(slot.duration==='allday'?'bg-blue-50 text-blue-700 border-blue-200':'bg-teal-50 text-teal-700 border-teal-200')+' border rounded-full px-3 py-1.5 text-xs font-mono flex items-center gap-2 fade-in shadow-sm';
+        badge.innerHTML='<span>'+slot.display+'</span><button class="text-red-500 hover:text-red-700 font-bold focus:outline-none" data-index="'+index+'">&#10005;</button>';
         selectedSlotsList.appendChild(badge);
     });
-    selectedSlotsList.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', e => {
-            tempSlots.splice(parseInt(e.target.getAttribute('data-index')), 1);
-            syncGridUiWithSlots(); buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
-        });
-    });
+    selectedSlotsList.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click',e=>{tempSlots.splice(parseInt(e.target.getAttribute('data-index')),1);syncGridUiWithSlots();buildMiniMonthCalendar();renderMonthDaysUi();renderTempSlots();}); });
 }
 
-// ── Timeout helper — Firebase bazen yanıt vermez, bunu önler ─────────
-function withTimeout(promise, ms) {
-    return Promise.race([
-        promise,
-        new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('TIMEOUT')), ms)
-        )
-    ]);
-}
+function withTimeout(promise,ms){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error('TIMEOUT')),ms))]);}
 
-// ── Create poll ────────────────────────────────────────────────────────
-btnCreatePoll.addEventListener('click', async () => {
-    const title        = inputTitle.value.trim();
-    const locationName = inputLocation.value.trim();
-    const desc         = inputDesc.value.trim();
-
-    if (!title)                 return alert('Please enter a meeting title!');
-    if (tempSlots.length === 0) return alert('Please select at least one time slot!');
-
-    const originalBtnText = btnCreatePoll.innerHTML;
-    btnCreatePoll.innerHTML = activePollId ? "Updating... ⏳" : "Creating poll... ⏳";
-    btnCreatePoll.disabled = true;
-
-    try {
-        const slotData = { title, location: locationName, desc, slots: tempSlots.map(s => JSON.stringify(s)) };
-
-        if (activePollId) {
-            // GÜNCELLEME — aynı ID korunur, oylar silinmez
-            await withTimeout(setDoc(doc(db, "polls", activePollId), slotData, { merge: true }), 12000);
-        } else {
-            // YENİ OLUŞTUR
-            const pollRef = await withTimeout(
-                addDoc(collection(db, "polls"), { ...slotData, createdAt: serverTimestamp() }),
-                12000
-            );
-            activePollId = pollRef.id;
-        }
-
-        globalSlots        = [...tempSlots];
-        globalMeetingTitle = title;
-        globalLocation     = locationName || "Not specified";
-        globalDesc         = desc || "No description.";
-
-        sharePreviewTitle.textContent = globalMeetingTitle;
-        sharePreviewDesc.textContent  = globalDesc;
-        sharePreviewLoc.textContent   = globalLocation;
-        sharePreviewSlotsCount.textContent = `${globalSlots.length} time options`;
-
-        const baseUrl = window.location.href.split('#')[0];
-        doodleShareUrl.value = `${baseUrl}#/poll/${activePollId}`;
-
-        // Show warning if running from local file
-        if (baseUrl.startsWith('file://')) {
-            document.getElementById('local-file-warning').classList.remove('hidden');
-        }
-
-        setupVoteScreen(globalMeetingTitle, globalLocation, globalDesc, globalSlots);
-        listenToLiveVotes();
-        window.history.pushState(null, null, `#/poll/${activePollId}`);
-        switchScreen('share');
-
-    } catch (e) {
-        console.error("Firebase Kayıt Hatası:", e);
-        const RULES = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}";
-        let msg;
-        if (e.message === 'TIMEOUT') {
-            msg = "⏱️ BAĞLANTI ZAMAN AŞIMI (12 saniye)\n\n"
-                + "Firebase yanıt vermedi. Güvenlik kuralları yazma iznini engelliyor olabilir.\n\n"
-                + "Firebase Console'da şu adımları izle:\n"
-                + "1. console.firebase.google.com → slotify-33d2c\n"
-                + "2. Firestore Database → Rules sekmesi\n"
-                + "3. Şu kuralı yapıştır → Publish:\n\n" + RULES;
-        } else if (e.code === 'permission-denied' || String(e.message).toLowerCase().includes('permission')) {
-            msg = "🔒 FİREBASE İZİN HATASI\n\n"
-                + "1. console.firebase.google.com → slotify-33d2c\n"
-                + "2. Firestore Database → Rules\n"
-                + "3. Yapıştır → Publish:\n\n" + RULES;
-        } else {
-            msg = "❌ Hata: " + (e.message || String(e));
-        }
-        alert(msg);
-    } finally {
-        // Timeout da dahil HER koşulda butonu geri aç
-        btnCreatePoll.innerHTML = originalBtnText;
-        btnCreatePoll.disabled  = false;
-    }
+btnCreatePoll.addEventListener('click',async()=>{
+    const title=inputTitle.value.trim(),locationName=inputLocation.value.trim(),desc=inputDesc.value.trim();
+    if(!title)return alert('Please enter a meeting title!');
+    if(tempSlots.length===0)return alert('Please select at least one time slot!');
+    const origTxt=btnCreatePoll.innerHTML;
+    btnCreatePoll.innerHTML=activePollId?"Updating... &#9203;":"Creating poll... &#9203;"; btnCreatePoll.disabled=true;
+    try{
+        const slotData={title,location:locationName,desc,slots:tempSlots.map(s=>JSON.stringify(s))};
+        if(activePollId){await withTimeout(setDoc(doc(db,"polls",activePollId),slotData,{merge:true}),12000);}
+        else{const pr=await withTimeout(addDoc(collection(db,"polls"),{...slotData,createdAt:serverTimestamp()}),12000);activePollId=pr.id;}
+        globalSlots=[...tempSlots];globalMeetingTitle=title;globalLocation=locationName||"Not specified";globalDesc=desc||"No description.";
+        sharePreviewTitle.textContent=globalMeetingTitle;sharePreviewDesc.textContent=globalDesc;sharePreviewLoc.textContent=globalLocation;sharePreviewSlotsCount.textContent=globalSlots.length+' time options';
+        const baseUrl=window.location.href.split('#')[0];doodleShareUrl.value=baseUrl+'#/poll/'+activePollId;
+        setupVoteScreen(globalMeetingTitle,globalLocation,globalDesc,globalSlots);listenToLiveVotes();window.history.pushState(null,null,'#/poll/'+activePollId);switchScreen('share');
+    }catch(e){
+        console.error(e);
+        alert(e.message==='TIMEOUT'?'Connection timeout. Check Firebase rules.':'Error: '+e.message);
+    }finally{btnCreatePoll.innerHTML=origTxt;btnCreatePoll.disabled=false;}
 });
 
-// ── Admin actions ──────────────────────────────────────────────────────
-btnAdminEdit.addEventListener('click', () => {
-    if (confirm("Edit this poll? Existing votes will be preserved.")) {
-        tempSlots = globalSlots.map(s => typeof s === 'string' ? JSON.parse(s) : {...s});
-        switchScreen('create');
-        renderWeekHeader(); updateWeekRangeLabel(); initCalendarGrid();
-        buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
-        btnCreatePoll.innerHTML = "Update and share ✏️";
-    }
-});
+btnAdminEdit.addEventListener('click',()=>{if(confirm("Edit this poll? Votes will be preserved.")){tempSlots=globalSlots.map(s=>typeof s==='string'?JSON.parse(s):{...s});switchScreen('create');renderWeekHeader();updateWeekRangeLabel();initCalendarGrid();buildMiniMonthCalendar();renderMonthDaysUi();renderTempSlots();btnCreatePoll.innerHTML="Update and share &#9999;&#65039;";}});
+btnAdminDelete.addEventListener('click',async()=>{if(confirm("Delete this poll? All votes will be lost.")){try{await deleteDoc(doc(db,"polls",activePollId));alert("Poll deleted.");window.location.hash='';inputTitle.value='';inputLocation.value='';inputDesc.value='';tempSlots=[];initCalendarGrid();buildMiniMonthCalendar();renderMonthDaysUi();renderTempSlots();switchScreen('create');}catch(e){alert("Delete error: "+e.message);}}});
 
-btnAdminDelete.addEventListener('click', async () => {
-    if (confirm("Bu anketi tamamen silmek istediğinize emin misiniz? Tüm oylama verileri yok olacaktır.")) {
-        try {
-            await deleteDoc(doc(db, "polls", activePollId));
-            alert("Poll deleted successfully.");
-            window.location.hash = '';
-            inputTitle.value = ''; inputLocation.value = ''; inputDesc.value = ''; tempSlots = [];
-            initCalendarGrid(); buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
-            switchScreen('create');
-        } catch (e) {
-            console.error("Silme hatası:", e);
-            alert("Silinirken bir hata oluştu: " + e.message);
-        }
-    }
-});
-
-// ── Vote screen setup ──────────────────────────────────────────────────
-function setupVoteScreen(title, locationName, desc, slots) {
-    voteTitle.textContent = title;
-    voteDetails.innerHTML = `
-        ${locationName && locationName !== "Not specified" ? '<span class="bg-gray-100 px-2 py-1 rounded border border-gray-200 mr-2">📍 ' + locationName + '</span>' : ''}
-        ${desc && desc !== "No description." ? '<span class="text-gray-600">📝 ' + desc + '</span>' : ''}
-    `;
-
-    const grid = document.getElementById('slot-availability-grid');
-    grid.innerHTML = '';
-    const allDayDates = new Set();
-    slots.forEach(si => { const s = typeof si === 'string' ? JSON.parse(si) : si; if (s.duration === "allday") allDayDates.add(s.dateKey); });
-
-    slots.forEach(si => {
-        const s = typeof si === 'string' ? JSON.parse(si) : si;
-        if (s.duration !== "allday" && allDayDates.has(s.dateKey)) return;
-        const key = `${s.dateKey}_${s.hourKey}`;
-        const row = document.createElement('div');
-        row.className = 'flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200';
-        row.innerHTML = `
-            <span class="text-xs font-mono text-gray-700 flex-grow">${s.display}</span>
-            <button class="slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300"
-                    data-key="${key}" data-available="false">— Doesn't work</button>
-        `;
+function setupVoteScreen(title,locationName,desc,slots){
+    voteTitle.textContent=title;
+    voteDetails.innerHTML=(locationName&&locationName!=="Not specified"?'<span class="bg-gray-100 px-2 py-1 rounded border border-gray-200 mr-2">&#128205; '+locationName+'</span>':'')+(desc&&desc!=="No description."?'<span class="text-gray-600">&#128221; '+desc+'</span>':'');
+    const grid=document.getElementById('slot-availability-grid');grid.innerHTML='';
+    const adDates=new Set();slots.forEach(si=>{const s=typeof si==='string'?JSON.parse(si):si;if(s.duration==="allday")adDates.add(s.dateKey);});
+    slots.forEach(si=>{
+        const s=typeof si==='string'?JSON.parse(si):si;
+        if(s.duration!=="allday"&&adDates.has(s.dateKey))return;
+        const key=s.dateKey+'_'+s.hourKey;
+        const row=document.createElement('div');row.className='flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200';
+        row.innerHTML='<span class="text-xs font-mono text-gray-700 flex-grow">'+s.display+'</span><button class="slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300" data-key="'+key+'" data-available="false">&#8212; Does not work</button>';
         grid.appendChild(row);
     });
-
-    grid.querySelectorAll('.slot-toggle-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const isAvailable = btn.getAttribute('data-available') === 'true';
-            btn.setAttribute('data-available', String(!isAvailable));
-            if (!isAvailable) {
-                btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-teal-500 text-white';
-                btn.textContent = '✅ Works for me';
-            } else {
-                btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300';
-                btn.textContent = '— Doesn't work';
-            }
+    grid.querySelectorAll('.slot-toggle-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+            const isA=btn.getAttribute('data-available')==='true';
+            btn.setAttribute('data-available',String(!isA));
+            if(!isA){btn.className='slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-teal-500 text-white';btn.innerHTML='&#10003; Works for me';}
+            else{btn.className='slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300';btn.innerHTML='&#8212; Does not work';}
         });
     });
 }
 
-function loadVoterSelections(voterName) {
-    const voterData = globalVotesData.find(v => v.voterName === voterName);
-    if (!voterData || !voterData.availability) return;
-    document.querySelectorAll('.slot-toggle-btn').forEach(btn => {
-        const key = btn.getAttribute('data-key');
-        const available = voterData.availability[key] === true;
-        btn.setAttribute('data-available', String(available));
-        if (available) {
-            btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-teal-500 text-white';
-            btn.textContent = '✅ Works for me';
-        } else {
-            btn.className = 'slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300';
-            btn.textContent = '— Doesn't work';
-        }
+function loadVoterSelections(voterName){
+    const vd=globalVotesData.find(v=>v.voterName===voterName);if(!vd||!vd.availability)return;
+    document.querySelectorAll('.slot-toggle-btn').forEach(btn=>{
+        const key=btn.getAttribute('data-key'),available=vd.availability[key]===true;
+        btn.setAttribute('data-available',String(available));
+        if(available){btn.className='slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-teal-500 text-white';btn.innerHTML='&#10003; Works for me';}
+        else{btn.className='slot-toggle-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-200 text-gray-500 hover:bg-gray-300';btn.innerHTML='&#8212; Does not work';}
     });
 }
 
-// ── Share & copy handlers ──────────────────────────────────────────────
-btnDoodleCopy.addEventListener('click', () => {
-    doodleShareUrl.select();
-    navigator.clipboard.writeText(doodleShareUrl.value).catch(() => {});
-    btnDoodleCopy.textContent = "Copied! ✓";
-    btnDoodleCopy.classList.replace('bg-teal-600', 'bg-emerald-600');
-    setTimeout(() => {
-        btnDoodleCopy.textContent = "Copy link";
-        btnDoodleCopy.classList.replace('bg-emerald-600', 'bg-teal-600');
-    }, 2000);
+btnDoodleCopy.addEventListener('click',()=>{doodleShareUrl.select();navigator.clipboard.writeText(doodleShareUrl.value).catch(()=>{});btnDoodleCopy.textContent="Copied! &#10003;";btnDoodleCopy.classList.replace('bg-teal-600','bg-emerald-600');setTimeout(()=>{btnDoodleCopy.textContent="Copy link";btnDoodleCopy.classList.replace('bg-emerald-600','bg-teal-600');},2000);});
+btnShareWaDirect.addEventListener('click',()=>{window.open('https://api.whatsapp.com/send?text='+encodeURIComponent('&#9889; *SLOTIFY MEETING POLL*
+
+Title: '+globalMeetingTitle+'
+Location: '+globalLocation+'
+Mark your availability:
+'+doodleShareUrl.value),'_blank');});
+document.getElementById('btn-mailto').addEventListener('click',()=>{const link=doodleShareUrl.value;const slots2=globalSlots.map(si=>{const s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join('
+');const body=encodeURIComponent('Hi,
+
+Please mark your availability for "'+globalMeetingTitle+'".
+
+Location: '+(globalLocation||'Not specified')+'
+
+Proposed times:
+'+slots2+'
+
+Click to respond:
+'+link+'
+
+Thank you.');window.location.href='mailto:?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+body;});
+btnGoToVote.addEventListener('click',()=>switchScreen('vote'));
+btnBackToShare.addEventListener('click',()=>{ if(activePollId){if(!doodleShareUrl.value){const baseUrl=window.location.href.split('#')[0];doodleShareUrl.value=baseUrl+'#/poll/'+activePollId;}switchScreen('share');}else{switchScreen('create');}});
+
+inputVoterName.addEventListener('blur',()=>{const name=inputVoterName.value.trim();if(name)loadVoterSelections(name);});
+btnSubmitVote.addEventListener('click',async()=>{
+    try{
+        const name=inputVoterName.value.trim();
+        if(!name)return alert('Please enter your name.');
+        if(!activePollId)return alert('Error: Poll not found.');
+        const availability={};let hasAvail=false;
+        document.querySelectorAll('.slot-toggle-btn').forEach(btn=>{const k=btn.getAttribute('data-key'),av=btn.getAttribute('data-available')==='true';availability[k]=av;if(av)hasAvail=true;});
+        if(!hasAvail)return alert('Please mark at least one time as available!');
+        btnSubmitVote.innerHTML="Saving... &#9203;";btnSubmitVote.disabled=true;
+        const voteData={voterName:name,availability,votedAt:serverTimestamp()};
+        const eq=query(collection(db,"polls",activePollId,"votes"),where("voterName","==",name));
+        const es=await getDocs(eq);
+        if(!es.empty){await updateDoc(es.docs[0].ref,voteData);alert("Your availability updated! &#10003;");}
+        else{await addDoc(collection(db,"polls",activePollId,"votes"),voteData);alert("Availability saved!");}
+    }catch(e){alert("Error: "+e.message);}
+    finally{btnSubmitVote.innerHTML="Save my availability &#9889;";btnSubmitVote.disabled=false;}
 });
 
-btnShareWaDirect.addEventListener('click', () => {
-    const txt = `⚡ *SLOTIFY MEETING POLL* ⚡\n\n📢 *Title:* ${globalMeetingTitle}\n📍 *Location:* ${globalLocation}\n👇 Duration opsiyonlarını inceleyip oyunu ver:\n🔗 ${doodleShareUrl.value}`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
-});
-
-document.getElementById('btn-mailto').addEventListener('click', () => {
-    const link   = doodleShareUrl.value;
-    const konu   = encodeURIComponent(`Meeting poll: ${globalMeetingTitle}`);
-    const slotListesi = globalSlots.map(si => {
-        const s = typeof si === 'string' ? JSON.parse(si) : si;
-        return `  • ${s.display}`;
-    }).join('\n');
-    const govde = encodeURIComponent(
-        `Merhaba,\n\n` +
-        `"${globalMeetingTitle}" toplantısı için available zamanınızı seçmenizi rica ediyorum.\n\n` +
-        `📍 Location: ${globalLocation || 'Not specified'}\n\n` +
-        `Proposed time options:\n${slotListesi}\n\n` +
-        `Aşağıdaki bağlantıya tıklayarak available olduğunuz saatleri işaretleyebilirsiniz:\n` +
-        `${link}\n\n` +
-        `Thank you.`
-    );
-    window.location.href = `mailto:?subject=${konu}&body=${govde}`;
-});
-
-btnGoToVote.addEventListener('click',   () => switchScreen('vote'));
-btnBackToShare.addEventListener('click', () => {
-    if (activePollId && doodleShareUrl.value) {
-        switchScreen('share');
-    } else if (activePollId) {
-        // Share ekranı linki yoksa yeniden oluştur
-        const baseUrl = window.location.href.split('#')[0];
-        doodleShareUrl.value = baseUrl + '#/poll/' + activePollId;
-        switchScreen('share');
-    } else {
-        switchScreen('create');
-    }
-});
-
-// ── Vote submission ────────────────────────────────────────────────────
-inputVoterName.addEventListener('blur', () => {
-    const name = inputVoterName.value.trim();
-    if (name) loadVoterSelections(name);
-});
-
-btnSubmitVote.addEventListener('click', async () => {
-    try {
-        const name = inputVoterName.value.trim();
-        if (!name)         return alert('Please enter your name.');
-        if (!activePollId) return alert('Error: Poll reference not found.');
-
-        const availability = {};
-        let enAzBirUygun = false;
-        document.querySelectorAll('.slot-toggle-btn').forEach(btn => {
-            const key = btn.getAttribute('data-key');
-            const available = btn.getAttribute('data-available') === 'true';
-            availability[key] = available;
-            if (available) enAzBirUygun = true;
-        });
-        if (!enAzBirUygun) return alert('En az bir saat için "✅ Works for me" seçmelisiniz!');
-
-        btnSubmitVote.innerHTML = "Saving... ⏳";
-        btnSubmitVote.disabled  = true;
-
-        const voteData = { voterName: name, availability, votedAt: serverTimestamp() };
-        const existingQ = query(collection(db, "polls", activePollId, "votes"), where("voterName", "==", name));
-        const existingSnap = await getDocs(existingQ);
-        if (!existingSnap.empty) {
-            await updateDoc(existingSnap.docs[0].ref, voteData);
-            alert("Your availability updated! ✅");
-        } else {
-            await addDoc(collection(db, "polls", activePollId, "votes"), voteData);
-            alert("Availability saved! 🎉");
-        }
-
-    } catch (e) {
-        console.error("Oy gönderme hatası:", e);
-        alert("Database error: " + e.message);
-    } finally {
-        btnSubmitVote.innerHTML = "Save my availability ⚡";
-        btnSubmitVote.disabled  = false;
-    }
-});
-
-// ── Stats calculation — Doodle mantığı ────────────────────────────────
-function calculateStats() {
-    slotStatsContainer.innerHTML = '';
-    const totalVoters = globalVotesData.length;
-    if (totalVoters === 0) {
-        slotStatsContainer.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4">No responses yet.</p>';
-        updateVotersList();
-        return;
-    }
-
-    const allDayDates = new Set();
-    globalSlots.forEach(si => { const s = typeof si === 'string' ? JSON.parse(si) : si; if (s.duration === "allday") allDayDates.add(s.dateKey); });
-
-    // Her slot için "availableum" sayısını hesapla
-    const slotScores = [];
-    globalSlots.forEach(si => {
-        const slotObj = typeof si === 'string' ? JSON.parse(si) : si;
-        if (slotObj.duration !== "allday" && allDayDates.has(slotObj.dateKey)) return;
-        const key = `${slotObj.dateKey}_${slotObj.hourKey}`;
-
-        const availablelar = globalVotesData.filter(v => {
-            if (v.availability) return v.availability[key] === true;
-            return false;
-        }).map(v => v.voterName);
-
-        slotScores.push({ slotObj, key, availablelar, count: availablelar.length });
+function calculateStats(){
+    slotStatsContainer.innerHTML='';
+    const total=globalVotesData.length;
+    if(total===0){slotStatsContainer.innerHTML='<p class="text-xs text-gray-400 italic text-center py-4">No responses yet.</p>';updateVotersList();return;}
+    const adDates=new Set();globalSlots.forEach(si=>{const s=typeof si==='string'?JSON.parse(si):si;if(s.duration==="allday")adDates.add(s.dateKey);});
+    const scores=[];
+    globalSlots.forEach(si=>{
+        const slotObj=typeof si==='string'?JSON.parse(si):si;
+        if(slotObj.duration!=="allday"&&adDates.has(slotObj.dateKey))return;
+        const key=slotObj.dateKey+'_'+slotObj.hourKey;
+        const avail=globalVotesData.filter(v=>v.availability&&v.availability[key]===true).map(v=>v.voterName);
+        scores.push({slotObj,avail,count:avail.length});
     });
-
-    // En yüksek skoru bul
-    const maxScore = Math.max(...slotScores.map(s => s.count));
-
-    // Sırala: en çok available → en az
-    slotScores.sort((a, b) => b.count - a.count);
-
-    slotScores.forEach(({ slotObj, availablelar, count }) => {
-        const yuzde  = Math.round(count / totalVoters * 100);
-        const isWinner = count === maxScore && count === totalVoters && totalVoters > 0;
-        const isTop    = count === maxScore && count > 0;
-
-        const statRow = document.createElement('div');
-        statRow.className = `p-3 rounded-xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all
-            ${isWinner ? 'bg-teal-50 border-teal-400 ring-2 ring-teal-400' : isTop ? 'bg-white border-teal-200' : 'bg-white border-gray-200'}`;
-        statRow.innerHTML = `
-            <div class="flex-grow">
-                <div class="flex justify-between text-xs mb-1 items-center">
-                    <span class="font-bold text-gray-900">${isWinner ? '🏆 ' : isTop ? '⭐ ' : ''}${slotObj.display}</span>
-                    <span class="${isTop ? 'text-teal-600' : 'text-gray-400'} font-mono font-bold text-xs">${count}/${totalVoters} available</span>
-                </div>
-                <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200">
-                    <div class="${isWinner ? 'bg-teal-500' : isTop ? 'bg-teal-400' : 'bg-gray-300'} h-2.5 rounded-full transition-all duration-500" style="width:${yuzde}%"></div>
-                </div>
-                <p class="text-[10px] text-gray-500 mt-1">${availablelar.length > 0 ? '✅ ' + availablelar.join(', ') : 'Henüz kimse available değil'}</p>
-            </div>
-            <button class="btn-cal bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition-colors shrink-0 shadow"
-                data-slot='${JSON.stringify(slotObj)}'>📅 Takvime İşle</button>
-        `;
-        slotStatsContainer.appendChild(statRow);
+    const maxScore=Math.max(...scores.map(s=>s.count));
+    scores.sort((a,b)=>b.count-a.count);
+    scores.forEach(({slotObj,avail,count})=>{
+        const pct=Math.round(count/total*100);
+        const isWinner=count===maxScore&&count===total&&total>0;
+        const isTop=count===maxScore&&count>0;
+        const row=document.createElement('div');
+        row.className='p-3 rounded-xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 '+(isWinner?'bg-teal-50 border-teal-400 ring-2 ring-teal-400':isTop?'bg-white border-teal-200':'bg-white border-gray-200');
+        row.innerHTML='<div class="flex-grow"><div class="flex justify-between text-xs mb-1 items-center"><span class="font-bold text-gray-900">'+(isWinner?'&#127942; ':isTop?'&#11088; ':'')+slotObj.display+'</span><span class="'+(isTop?'text-teal-600':'text-gray-400')+' font-mono font-bold text-xs">'+count+'/'+total+' available</span></div><div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200"><div class="'+(isWinner?'bg-teal-500':isTop?'bg-teal-400':'bg-gray-300')+' h-2.5 rounded-full transition-all duration-500" style="width:'+pct+'%"></div></div><p class="text-[10px] text-gray-500 mt-1">'+(avail.length>0?'&#10003; '+avail.join(', '):'No one available yet')+'</p></div><button class="btn-cal bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition-colors shrink-0 shadow" data-slot=''+JSON.stringify(slotObj)+''>&#128197; Add to calendar</button>';
+        slotStatsContainer.appendChild(row);
     });
-
-    document.querySelectorAll('.btn-cal').forEach(btn => {
-        btn.addEventListener('click', e => {
-            triggerGoogleCalendarLink(globalMeetingTitle, JSON.parse(e.currentTarget.getAttribute('data-slot')));
-        });
-    });
-
+    document.querySelectorAll('.btn-cal').forEach(btn=>{btn.addEventListener('click',e=>{const s=JSON.parse(e.currentTarget.getAttribute('data-slot'));const st=new Date(s.start);let si,ei;if(s.duration==="allday"){si=st.toISOString().replace(/[-:]/g,"").split("T")[0];ei=new Date(st.getTime()+86400000).toISOString().replace(/[-:]/g,"").split("T")[0];}else{const en=new Date(st.getTime()+s.duration*60000);si=st.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";ei=en.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";}window.open('https://www.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(globalMeetingTitle)+'&dates='+si+'/'+ei+'&details='+encodeURIComponent(globalDesc||'')+'&location='+encodeURIComponent(globalLocation||'')+'&sf=true&output=xml','_blank');});});
     updateVotersList();
 }
 
-function updateVotersList() {
-    const container = document.getElementById('voters-list');
-    if (!container) return;
-    container.innerHTML = '';
-    if (globalVotesData.length === 0) {
-        container.innerHTML = '<p class="text-xs text-gray-400 italic">No participants yet.</p>';
-        return;
-    }
-    globalVotesData.forEach(v => {
-        const badge = document.createElement('div');
-        badge.className = 'flex items-center gap-1.5 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-700';
-        const availableSayisi = v.availability ? Object.values(v.availability).filter(Boolean).length : 0;
-        badge.innerHTML = `👤 ${v.voterName} <span class="text-teal-600 font-mono">(${availableSayisi} available)</span>`;
-        container.appendChild(badge);
-    });
+function updateVotersList(){
+    const c=document.getElementById('voters-list');if(!c)return;c.innerHTML='';
+    if(globalVotesData.length===0){c.innerHTML='<p class="text-xs text-gray-400 italic">No participants yet.</p>';return;}
+    globalVotesData.forEach(v=>{const b=document.createElement('div');b.className='flex items-center gap-1.5 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-700';const n=v.availability?Object.values(v.availability).filter(Boolean).length:0;b.innerHTML='&#128100; '+v.voterName+' <span class="text-teal-600 font-mono">('+n+' available)</span>';c.appendChild(b);});
 }
 
-function triggerGoogleCalendarLink(title, slotObj) {
-    let startIso = "", endIso = "";
-    try {
-        const start = new Date(slotObj.start);
-        if (slotObj.duration === "allday") {
-            startIso = start.toISOString().replace(/[-:]/g, "").split("T")[0];
-            endIso   = new Date(start.getTime() + 86400000).toISOString().replace(/[-:]/g, "").split("T")[0];
-        } else {
-            const end = new Date(start.getTime() + slotObj.duration * 60000);
-            startIso  = start.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-            endIso    = end.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-        }
-    } catch { startIso = "20260601T120000Z"; endIso = "20260601T130000Z"; }
-    window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startIso}/${endIso}&details=${encodeURIComponent(globalDesc||'')}&location=${encodeURIComponent(globalLocation||'')}&sf=true&output=xml`, '_blank');
+function listenToLiveVotes(){
+    if(unsubscribeLiveVotes)unsubscribeLiveVotes();
+    const q=query(collection(db,"polls",activePollId,"votes"),orderBy("votedAt","desc"));
+    unsubscribeLiveVotes=onSnapshot(q,snapshot=>{globalVotesData=[];snapshot.forEach(ds=>globalVotesData.push(ds.data()));calculateStats();});
 }
 
-// ── Live votes listener ────────────────────────────────────────────────
-function listenToLiveVotes() {
-    if (unsubscribeLiveVotes) unsubscribeLiveVotes();
-    const q = query(collection(db, "polls", activePollId, "votes"), orderBy("votedAt", "desc"));
-    unsubscribeLiveVotes = onSnapshot(q, snapshot => {
-        globalVotesData = [];
-        snapshot.forEach(docSnap => { globalVotesData.push(docSnap.data()); });
-        calculateStats();
-    });
+async function loadPollDirectly(pollId){
+    activePollId=pollId;
+    try{
+        const ds=await getDoc(doc(db,"polls",pollId));
+        if(ds.exists()){
+            const data=ds.data();globalMeetingTitle=data.title;globalLocation=data.location||"Not specified";globalDesc=data.desc||"";globalSlots=data.slots;
+            inputTitle.value=globalMeetingTitle;inputLocation.value=data.location||"";inputDesc.value=globalDesc;
+            sharePreviewTitle.textContent=globalMeetingTitle;sharePreviewDesc.textContent=globalDesc||"No description.";sharePreviewLoc.textContent=globalLocation;sharePreviewSlotsCount.textContent=globalSlots.length+' time options';
+            doodleShareUrl.value=window.location.href.split('#')[0]+'#/poll/'+pollId;
+            setupVoteScreen(data.title,globalLocation,globalDesc,data.slots);switchScreen('vote');listenToLiveVotes();
+        }else{window.location.hash='';switchScreen('create');}
+    }catch(err){console.error(err);window.location.hash='';switchScreen('create');}
 }
 
-// ── Load poll from URL hash ────────────────────────────────────────────
-async function loadPollDirectly(pollId) {
-    activePollId = pollId;
-    try {
-        const docSnap = await getDoc(doc(db, "polls", pollId));
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            globalMeetingTitle = data.title;
-            globalLocation     = data.location || "Not specified";
-            globalDesc         = data.desc || "";
-            globalSlots        = data.slots;
+function switchScreen(target){screenCreate.classList.add('hidden');screenShare.classList.add('hidden');screenVote.classList.add('hidden');if(target==='create')screenCreate.classList.remove('hidden');if(target==='share')screenShare.classList.remove('hidden');if(target==='vote')screenVote.classList.remove('hidden');}
 
-            inputTitle.value    = globalMeetingTitle;
-            inputLocation.value = data.location || "";
-            inputDesc.value     = globalDesc;
+window.addEventListener('hashchange',()=>{const h=window.location.hash;if(h&&h.startsWith('#/poll/')){const id=h.replace('#/poll/','');if(activePollId!==id)loadPollDirectly(id);}else switchScreen('create');});
 
-            sharePreviewTitle.textContent      = globalMeetingTitle;
-            sharePreviewDesc.textContent       = globalDesc || "No description provided.";
-            sharePreviewLoc.textContent        = globalLocation;
-            sharePreviewSlotsCount.textContent = `${globalSlots.length} time options`;
-            doodleShareUrl.value               = `${window.location.href.split('#')[0]}#/poll/${pollId}`;
+window.addEventListener('DOMContentLoaded',()=>{renderWeekHeader();updateWeekRangeLabel();initCalendarGrid();buildMiniMonthCalendar();const h=window.location.hash;if(h&&h.startsWith('#/poll/'))loadPollDirectly(h.replace('#/poll/',''));});
 
-            setupVoteScreen(data.title, globalLocation, globalDesc, data.slots);
-            switchScreen('vote');
-            listenToLiveVotes();
-        } else {
-            window.location.hash = ''; switchScreen('create');
-        }
-    } catch (err) {
-        console.error("Poll yükleme hatası:", err);
-        window.location.hash = ''; switchScreen('create');
-    }
-}
-
-// ── Screen switcher ────────────────────────────────────────────────────
-function switchScreen(target) {
-    screenCreate.classList.add('hidden');
-    screenShare.classList.add('hidden');
-    screenVote.classList.add('hidden');
-    if (target === 'create') screenCreate.classList.remove('hidden');
-    if (target === 'share')  screenShare.classList.remove('hidden');
-    if (target === 'vote')   screenVote.classList.remove('hidden');
-}
-
-// ── Hash routing ───────────────────────────────────────────────────────
-window.addEventListener('hashchange', () => {
-    const hash = window.location.hash;
-    if (hash && hash.startsWith('#/poll/')) {
-        const newId = hash.replace('#/poll/', '');
-        if (activePollId !== newId) loadPollDirectly(newId);
-    } else { switchScreen('create'); }
-});
-
-// ── Bootstrap ─────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-    renderWeekHeader();
-    updateWeekRangeLabel();
-    initCalendarGrid();
-    buildMiniMonthCalendar();
-    const hash = window.location.hash;
-    if (hash && hash.startsWith('#/poll/')) loadPollDirectly(hash.replace('#/poll/', ''));
-});
-
-document.getElementById('logo').addEventListener('click', () => { 
-    activePollId = null;
-    tempSlots = [];
-    btnCreatePoll.innerHTML = "Create and share 🚀";
-    window.location.hash = ''; location.reload(); 
-});
+document.getElementById('logo').addEventListener('click',()=>{activePollId=null;tempSlots=[];btnCreatePoll.innerHTML="Create and share &#128640;";window.location.hash='';location.reload();});
 </script>
 </body>
 </html>
