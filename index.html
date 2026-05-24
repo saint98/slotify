@@ -1026,7 +1026,18 @@ document.getElementById('btn-mailto').addEventListener('click', () => {
 });
 
 btnGoToVote.addEventListener('click',   () => switchScreen('vote'));
-btnBackToShare.addEventListener('click',() => switchScreen('share'));
+btnBackToShare.addEventListener('click', () => {
+    if (activePollId && doodleShareUrl.value) {
+        switchScreen('share');
+    } else if (activePollId) {
+        // Share ekranı linki yoksa yeniden oluştur
+        const baseUrl = window.location.href.split('#')[0];
+        doodleShareUrl.value = baseUrl + '#/poll/' + activePollId;
+        switchScreen('share');
+    } else {
+        switchScreen('create');
+    }
+});
 
 // ── Vote submission ────────────────────────────────────────────────────
 inputVoterName.addEventListener('blur', () => {
