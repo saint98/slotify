@@ -113,11 +113,11 @@
             <div>
                 <label class="block text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">👉 Eklenecek Slotun Durationsini Seçin</label>
                 <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="15">15 dk</button>
-                    <button type="button" class="btn-duration active-duration border px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="30">30 dk</button>
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="60">60 dk</button>
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="90">90 dk</button>
-                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="120">120 dk</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="15">15 min</button>
+                    <button type="button" class="btn-duration active-duration border px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="30">30 min</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="60">60 min</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="90">90 min</button>
+                    <button type="button" class="btn-duration bg-white border border-gray-300 text-gray-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none" data-mins="120">120 min</button>
                     <button type="button" class="btn-duration bg-white border border-gray-300 text-blue-600 border-blue-200 px-3 py-2.5 rounded-xl text-xs font-black transition-all focus:outline-none" data-mins="allday">All day 📅</button>
                 </div>
             </div>
@@ -419,7 +419,7 @@ function renderWeekHeader() {
     daysData.forEach(day => {
         const isWeekend = day.date.getDay() === 6 || day.date.getDay() === 0;
         const isToday   = day.dateStr === todayStr;
-        const dateDisplay = day.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+        const dateDisplay = day.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
         const col = document.createElement('div');
         col.className = `text-center py-1 ${isToday ? 'today-col-header' : ''}`;
@@ -434,8 +434,8 @@ function renderWeekHeader() {
 
 function updateWeekRangeLabel() {
     const fmt = { day: 'numeric', month: 'long' };
-    const start = daysData[0].date.toLocaleDateString('tr-TR', fmt);
-    const end   = daysData[6].date.toLocaleDateString('tr-TR', { ...fmt, year: 'numeric' });
+    const start = daysData[0].date.toLocaleDateString('en-GB', fmt);
+    const end   = daysData[6].date.toLocaleDateString('en-GB', { ...fmt, year: 'numeric' });
     weekRangeLabel.textContent = `${start} – ${end}`;
 }
 
@@ -557,8 +557,8 @@ function handleHourClick(dateStr, hourStr) {
     const startObj = new Date(`${dateStr}T${hourStr}:00`);
     const endObj   = new Date(startObj.getTime() + selectedDuration * 60000);
     const fmt      = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-    const startDisplay = startObj.toLocaleString('tr-TR', fmt);
-    const endHourStr   = endObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    const startDisplay = startObj.toLocaleString('en-GB', fmt);
+    const endHourStr   = endObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
     const existing = tempSlots.findIndex(s => s.dateKey === dateStr && s.hourKey === hourStr);
     if (existing > -1) { tempSlots.splice(existing, 1); }
@@ -566,7 +566,7 @@ function handleHourClick(dateStr, hourStr) {
         tempSlots.push({
             start: startObj.toISOString(),
             duration: selectedDuration,
-            display: `📅 ${startDisplay} - ${endHourStr} (${selectedDuration} dk)`,
+            display: `📅 ${startDisplay} - ${endHourStr} (${selectedDuration} min)`,
             dateKey: dateStr, hourKey: hourStr
         });
     }
@@ -579,7 +579,7 @@ function buildMiniMonthCalendar() {
     const { year, month } = currentMonthState;
 
     // Label (e.g. "Mayıs 2026")
-    const raw = new Date(year, month, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+    const raw = new Date(year, month, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
     document.getElementById('month-label').textContent = raw.charAt(0).toUpperCase() + raw.slice(1);
 
     const firstDow    = new Date(year, month, 1).getDay(); // 0=Sun
@@ -614,7 +614,7 @@ function toggleMonthDateSelection(dateStr) {
         tempSlots.push({
             start: new Date(`${dateStr}T09:00:00`).toISOString(),
             duration: 60, dateKey: dateStr, hourKey: "09:00",
-            display: `📅 ${dateStr} 09:00 - 10:00 (60 dk)`
+            display: `📅 ${dateStr} 09:00 - 10:00 (60 min)`
         });
     }
     buildMiniMonthCalendar(); renderMonthDaysUi(); renderTempSlots();
@@ -636,7 +636,7 @@ function renderMonthDaysUi() {
         const localDate = new Date(y, m - 1, d);
         const headerRow = document.createElement('div');
         headerRow.className = "flex justify-between items-center border-b border-gray-100 pb-2";
-        headerRow.innerHTML = `<span class="text-xs font-black text-blue-600 uppercase tracking-wider">${localDate.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>`;
+        headerRow.innerHTML = `<span class="text-xs font-black text-blue-600 uppercase tracking-wider">${localDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>`;
 
         const btnRemoveGroup = document.createElement('button');
         btnRemoveGroup.className = "text-gray-400 hover:text-red-500 text-xs font-bold";
@@ -668,10 +668,10 @@ function renderMonthDaysUi() {
             const durSelect = document.createElement('select');
             durSelect.className = "bg-white border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-800 outline-none focus:border-blue-500";
             durSelect.innerHTML = `
-                <option value="15"     ${slot.duration === 15     ? 'selected' : ''}>15 dk</option>
-                <option value="30"     ${slot.duration === 30     ? 'selected' : ''}>30 dk</option>
+                <option value="15"     ${slot.duration === 15     ? 'selected' : ''}>15 min</option>
+                <option value="30"     ${slot.duration === 30     ? 'selected' : ''}>30 min</option>
                 <option value="60"     ${slot.duration === 60     ? 'selected' : ''}>1 hour</option>
-                <option value="90"     ${slot.duration === 90     ? 'selected' : ''}>90 dk</option>
+                <option value="90"     ${slot.duration === 90     ? 'selected' : ''}>90 min</option>
                 <option value="120"    ${slot.duration === 120    ? 'selected' : ''}>2 hours</option>
                 <option value="allday" ${slot.duration === 'allday'? 'selected' : ''}>All day</option>
             `;
@@ -701,7 +701,7 @@ function renderMonthDaysUi() {
             tempSlots.push({
                 start: new Date(`${dateStr}T${nextHour}:00`).toISOString(),
                 duration: 60, dateKey: dateStr, hourKey: nextHour,
-                display: `📅 ${dateStr} ${nextHour} - ${nextHour} (60 dk)`
+                display: `📅 ${dateStr} ${nextHour} - ${nextHour} (60 min)`
             });
             updateMonthSlotData(tempSlots[tempSlots.length - 1], 'time', nextHour);
         };
@@ -724,7 +724,7 @@ function updateMonthSlotData(slotRef, type, value) {
         const endObj   = new Date(startObj.getTime() + slotRef.duration * 60000);
         slotRef.start  = startObj.toISOString();
         const fmt      = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-        slotRef.display = `📅 ${startObj.toLocaleString('tr-TR', fmt)} - ${endObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} (${slotRef.duration} dk)`;
+        slotRef.display = `📅 ${startObj.toLocaleString('en-GB', fmt)} - ${endObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} (${slotRef.duration} min)`;
     }
     renderMonthDaysUi(); renderTempSlots();
 }
@@ -774,7 +774,7 @@ function syncGridUiWithSlots() {
                 activeCell.innerHTML = `
                     <div class="flex flex-col justify-start h-full w-full p-1.5 leading-tight">
                         <span class="font-black text-[11px] text-white">${slot.hourKey} – ${endStr}</span>
-                        <span class="text-[9px] text-teal-100 font-normal mt-0.5">${slot.duration} dk</span>
+                        <span class="text-[9px] text-teal-100 font-normal mt-0.5">${slot.duration} min</span>
                     </div>
                     <div class="text-white text-[11px] font-black p-1 opacity-70 hover:opacity-100 shrink-0">✕</div>
                 `;
