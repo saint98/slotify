@@ -599,7 +599,7 @@ document.getElementById('btn-send-invites').addEventListener('click',()=>{
     var nl=String.fromCharCode(10);
     var slotList=globalSlots.map(function(si){var s=typeof si==='string'?JSON.parse(si):si;return '  - '+s.display;}).join(nl);
     var body='Hi,'+nl+nl+'Please mark your availability for "'+globalMeetingTitle+'".'+nl+nl+'Location: '+(globalLocation||'Not specified')+nl+nl+'Proposed times:'+nl+slotList+nl+nl+'Click to respond:'+nl+doodleShareUrl.value+nl+nl+'Thank you.';
-    window.location.href='mailto:'+emails.map(encodeURIComponent).join(',')+'?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(body);
+    window.open('mailto:'+emails.map(encodeURIComponent).join(',')+'?subject='+encodeURIComponent('Meeting poll: '+globalMeetingTitle)+'&body='+encodeURIComponent(body));
     document.getElementById('email-modal').classList.add('hidden');
 });
 document.getElementById('btn-mailto').addEventListener('click',()=>{
